@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -15,8 +16,16 @@ class User extends Authenticatable
 
     protected static function booted(): void
     {
+        // Event ketika model User sedang dibuat
+
+        // Event ketika model User sudah berhasil dibuat
         static::created(function (User $user) {
-            $user->assignRole('panel_user');
+            // Membuat entri baru di tabel Pekerja terkait dengan user yang baru
+            Pekerja::create([
+                'name' => $user->name,
+                'user_id' => $user->id,
+                'job_descs_id' => request()->input('pekerja.job_descs_id') ?? null,  // Menambahkan job_descs_id jika ada
+            ]);
         });
     }
 
@@ -53,9 +62,27 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function canManageSettings()
+    {
+        // Logika untuk memeriksa apakah user bisa mengelola pengaturan
+        return $this->hasRole('admin'); // Contoh menggunakan role
+    }
+
+    public function role()
+    {
+        return $this->belongsToMany(Role::class);
+    }
 
     public function pekerja()
     {
         return $this->hasOne(Pekerja::class);
     }
+    protected function afterCreate(array $data, $user): void
+{
+    \App\Models\Pekerja::create([
+        'name' => $data['pekerja']['name'] ?? $data['name'], // Ambil nama pekerja
+        'user_id' => $user->id,
+        'job_descs_id' => $data['pekerja']['job_descs_id'] ?? null, // Ambil job_desc_id dari input
+    ]);
+}
 }

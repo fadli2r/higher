@@ -19,6 +19,7 @@ class PekerjaResource extends Resource
     protected static ?string $model = Pekerja::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected $fillable = ['name', 'user_id', 'job_descs_id'];
 
     public static function form(Form $form): Form
     {
@@ -27,11 +28,13 @@ class PekerjaResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->label('Name'),
-                Forms\Components\Select::make('job_desc_id')
+                Forms\Components\Select::make('job_descs_id')
                     ->label('Job Description')
-                    ->options(JobDesc::all()->pluck('name', 'id'))
+                    ->relationship('jobDesc', 'name') // Mengambil nama deskripsi pekerjaan dari relasi
+                    ->options(\App\Models\JobDesc::pluck('name', 'id')->toArray()) // Mengambil opsi dari tabel job_descs
                     ->required()
                     ->searchable()
+                    ->default(fn ($record) => $record->job_descs_id) // Default sesuai dengan nilai yang ada di record
                     ->placeholder('Pilih Deskripsi Pekerjaan'),
             ]);
     }
@@ -50,7 +53,9 @@ class PekerjaResource extends Resource
                     ->label('Job Description'),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('panel_pekerja')
+                    ->query(fn ($query) => $query->where('name', 'panel_pekerja'))
+                    ->label('Panel Pekerja Roles'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

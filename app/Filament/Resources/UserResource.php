@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\Pekerja;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
@@ -29,9 +30,10 @@ class UserResource extends Resource
                     ->label('Name')
                     ->required(),
 
-                Forms\Components\Select::make('pekerja.job_desc_id')
-                    ->label('Job Description')
-                    ->options(JobDesc::all()->pluck('name', 'id'))
+                Forms\Components\Select::make('pekerja.job_descs_id')
+                    ->label('Deskripsi Pekerjaan')
+
+                    ->options(\App\Models\JobDesc::pluck('name', 'id')->toArray())
                     ->required()
                     ->searchable()
                     ->placeholder('Pilih Deskripsi Pekerjaan'),
@@ -54,6 +56,11 @@ class UserResource extends Resource
                     ->required()
                     ->maxLength(255),
             ]);
+            $data = $request->validate([
+                'pekerja.name' => 'required|string|max:255',
+                'pekerja.job_descs_id' => 'required|exists:job_descs,id',
+            ]);
+
     }
 
     public static function table(Table $table): Table
@@ -103,5 +110,26 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+    protected function afterCreate(array $data, $user): void
+    {
+        $user->pekerja()->update([
+            'user_id' => $user->id,
+        ]);
+    }
+
+    protected static function mutateFormDataBeforeCreate(array $data): array
+    {
+        // Buat entri di tabel pekerja
+        $pekerja = Pekerja::create([
+            'name' => $data['pekerja']['name'] ?? $data['name'],
+            'job_descs_id' => $data['pekerja']['job_descs_id'],
+            'user_id' => null, // Akan diisi setelah user dibuat
+        ]);
+
+        // Tambahkan ID pekerja ke data user, jika relasi memerlukan pekerja_id
+        $data['pekerja_id'] = $pekerja->id;
+
+        return $data;
     }
 }
