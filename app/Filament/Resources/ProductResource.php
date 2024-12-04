@@ -3,27 +3,26 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
-use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\HasMany;  // Menggunakan komponen HasMany untuk relasi
-
+use App\Filament\Resources\ProductResource\RelationManagers\WorkflowRelationManager; // Pastikan ini mengimpor RelationManager yang benar
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
+    protected static ?string $navigationGroup = 'Products';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
         return $form
+
             ->schema([
                 Forms\Components\TextInput::make('title')
                     ->required()
@@ -42,10 +41,35 @@ class ProductResource extends Resource
                     ->label('Category'),
                 Forms\Components\TextInput::make('estimated_days')
                     ->numeric()
+                    ->disabled()  // Make it readonly, because it's calculated
                     ->label('Estimated Days'),
-
+                Forms\Components\Repeater::make('workflows')
+                  // You can use Repeater for multiple workflow steps
+                    ->relationship('workflows')  // Makes sure the relation is there
+                    ->schema([
+                        Forms\Components\TextInput::make('step_name')
+                            ->required()
+                            ->label('Step Name')
+                            ->columnSpan(1),
+                        Forms\Components\TextInput::make('step_order')
+                            ->numeric()
+                            ->required()
+                            ->label('Step Order')
+                            ->columnSpan(1),
+                        Forms\Components\TextInput::make('step_duration')
+                            ->numeric()
+                            ->required()
+                            ->label('Duration (Days)')
+                            ->columnSpan(1),
+                    ])
+                    ->columns(3)
+                    ->label('Product Workflows')
             ]);
+
+
+
     }
+
 
     public static function table(Table $table): Table
     {
@@ -55,6 +79,8 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('price')->label('Price'),
                 Tables\Columns\TextColumn::make('category.name')->label('Category'),
                 Tables\Columns\TextColumn::make('created_at')->label('Created At')->date(),
+                Tables\Columns\TextColumn::make('workflows.step_name')->label('Workflow Steps')
+                ->getStateUsing(fn ($record) => $record->workflows->pluck('step_name')->join(', ')),
             ])
             ->filters([
                 //
@@ -70,8 +96,7 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Resources\ProductResource\RelationManagers\WorkflowRelationManager::class, // Tambahkan relation manager di sini
-
+            \App\Filament\Resources\ProductResource\RelationManagers\WorkflowRelationManager::class,
         ];
     }
 

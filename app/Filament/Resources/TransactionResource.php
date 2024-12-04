@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
+    protected static ?string $navigationGroup = 'Transaksi';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

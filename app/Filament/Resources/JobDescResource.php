@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class JobDescResource extends Resource
 {
     protected static ?string $model = JobDesc::class;
+    protected static ?string $navigationGroup = 'Pekerja';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

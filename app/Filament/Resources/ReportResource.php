@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
+    protected static ?string $navigationGroup = 'Transaksi';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

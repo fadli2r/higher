@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class PekerjaResource extends Resource
 {
     protected static ?string $model = Pekerja::class;
+    protected static ?string $navigationGroup = 'Pekerja';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected $fillable = ['name', 'user_id', 'job_descs_id'];
