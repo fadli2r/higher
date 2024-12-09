@@ -12,7 +12,9 @@ class CartController extends Controller
      */
     public function index()
     {
-        //
+        $cart = Cart::where('user_id', auth()->id())->with('product')->get();
+
+        return view('checkout.index', ['cart' => $cart]);
     }
 
     /**
@@ -24,13 +26,22 @@ class CartController extends Controller
             return redirect()->route('login');
         }
 
-        $cart = Cart::create([
+        $cart = Cart::firstOrCreate([
             'user_id' => auth()->id(),
             'product_id' => $id,
-            'quantity' => 1,
+            'quantity' => 1
         ]);
 
-        return redirect()->route('products.index');
+        if ($cart->wasRecentlyCreated) {
+            flash()->success('Berhasil menambahkan produk ke keranjang');
+            return redirect()->route('products.index');
+        }
+
+        if ($cart->exists) {
+            flash()->warning('Hanya bisa menambahkan produk yang sama sekali');
+            return redirect()->route('products.index');
+        }
+        
     }
 
     /**
@@ -68,14 +79,18 @@ class CartController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Cart $cart)
+    public function destroy($id)
     {
-        //
+        $cart = Cart::find($id)->delete();        
+        flash()->success('Berhasil menghapus produk dari keranjang');
+
+        return redirect()->route('cart.index');
     }
 
     public function clear()
     {
         $cart = Cart::where('user_id', auth()->id())->delete();
+        flash()->success('Berhasil menghapus semua produk dari keranjang');
         return redirect()->route('products.index');
     }
 }

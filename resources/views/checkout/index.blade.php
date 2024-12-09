@@ -1,139 +1,53 @@
-@extends('layout/checkout')
-
-@section('media')
-        <link 
-            rel="stylesheet" 
-            type="text/css" 
-            href="/css/store.css" 
-        />
-@endsection
+@extends('layout.template')
 
 @section('content')
-        <main class="store">
-            <!-- Header -->
-            <div class="header">
-                <div class="wrapper header__wrapper">
-                    <div class="header__site">
-                        <a class="header__link-site" href="/">Xendit Demo</a>
-                    </div>
-                    <div class="header__navigation">
-                        <input
-                            class="header__checkbox"
-                            type="checkbox"
-                            id="header__button-menu"
-                        />
-                        <label
-                            for="header__button-menu"
-                            class="header__button-menu"
-                            ><span class="nav-icon"></span
-                        ></label>
-                        <ul class="header__links">
-                            <li>
-                                <a
-                                    class="header__link-github"
-                                    href="https://github.com/xendit/checkout-demo-laravel"
-                                    target="_blank"
-                                    >View Sample Code</a
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    class="header__link-docs"
-                                    href="https://docs.xendit.co/xeninvoice/"
-                                    target="_blank"
-                                    >View Xendit Docs</a
-                                >
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="checkout">
-                <div class="wrapper checkout__wrapper">
-                    <!-- Configuration -->
-                    <div class="configure">
-                        <div class="panel-configure">
-                            <h2 class="panel-configure__title">
-                                Welcome to<br />Xendit Demo Store
-                            </h2>
-                            <div class="panel-configure__message">
-                                Xendit is the leading payment gateway for
-                                Indonesia, Philipines and Southeast Asia.
-                            </div>
-                            <div class="panel-configure__tip">
-                                Select country and integration to view how we
-                                can help your business.
-                            </div>
+<div class="container mt-5">
+    <h1 class="text-center">Shopping Cart</h1>
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Example Item -->
+                @foreach ($cart as $item)
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="https://via.placeholder.com/60" alt="Item" class="img-thumbnail me-3"
+                                style="width: 60px;">
+                            <span>{{ $item->product->title }}</span>
                         </div>
-                        <form
-                            id="form-configure"
-                            class="form-configure"
-                            autocomplete="off"
-                        >
-                            <label class="form-configure__label"
-                                >Invoice Integration</label
-                            >
-                            <select
-                                id="select-integration"
-                                class="form-configure__select"
-                            >
-                                <option>Dialog Pop-up</option>
-                                <option>Redirect Checkout</option>
-                            </select>
-                            <label class="form-configure__label"
-                                >Country of Operation</label
-                            >
-                            <select
-                                id="select-country"
-                                class="form-configure__select"
-                            >
-                                <option>Indonesia</option>
-                                <option>Philippines</option>
-                            </select>
-                            <button
-                                id="button-start-demo"
-                                class="button form-configure__button-demo"
-                                type="submit"
-                            >
-                                <span>Start Demo</span>
-                            </button>
-                            <div class="form-configure__note">
-                                Payments are simulated, no real money will move!
-                            </div>
-                        </form>
-                    </div>
-                    <!-- Cart -->
-                    <div class="cart">
-                        <input
-                            class="cart-summary__checkbox--mobile"
-                            type="checkbox"
-                            id="cart-summary--mobile"
-                        />
-                        <label
-                            for="cart-summary--mobile"
-                            class="cart-summary--mobile"
-                        >
-                            <div class="cart-summary__title-toggle">
-                                <span>Show Orders</span>
-                            </div>
-                            <div class="cart-summary__icon-toggle"></div>
-                            <div class="cart-summary__total"></div>
-                        </label>
-                        <div class="cart-summary">
-                            <h2 class="cart-summary__title">Order Summary</h2>
-                            <div id="order-items" class="order-items"></div>
-                            <div id="subtotal" class="cart-subtotal"></div>
-                            <div id="total" class="cart-total"></div>
-                        </div>
-                    </div>
-                    @include('shared/modal')
-                </div>
-            </div>
-        </main>
-@endsection()
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" value="1" min="1" disabled>
+                    </td>
+                    <td>@rupiah($item->product->price)</td>
+                    <td>
+                        <a href="{{ route('cart.destroy', $item->id) }}">
+                            <button class="btn btn-danger btn-sm">Remove</button>
+                        </a>
+                    </td>
+                </tr>
+                @endforeach
+                <!-- Add more items as needed -->
+            </tbody>
+        </table>
+    </div>
 
-@section('scripts')
-        <!-- Javascripts -->
-        <script src="/js/data-cart.js"></script>
-        <script src="/js/checkout.js"></script>
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div>
+            <a href="{{ route('products.index') }}" class="btn btn-secondary">Continue Shopping</a>
+        </div>
+        <div>
+            <h5>Total: <span class="text-success">@rupiah($cart->sum('product.price'))</span></h5>
+            <a href="{{ route('cart.createOrder') }}" class="btn btn-primary">Checkout</a>
+        </div>
+    </div>
+</div>
 @endsection
