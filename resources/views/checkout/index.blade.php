@@ -14,7 +14,6 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Example Item -->
                 @foreach ($cart as $item)
                 <tr>
                     <td>
@@ -25,9 +24,9 @@
                         </div>
                     </td>
                     <td>
-                        <input type="number" class="form-control" value="1" min="1" disabled>
+                        <input type="number" class="form-control" value="{{ $item->quantity }}" min="1" disabled>
                     </td>
-                    <td>@rupiah($item->product->price)</td>
+                    <td>@rupiah($item->product->price * $item->quantity)</td>
                     <td>
                         <a href="{{ route('cart.destroy', $item->id) }}">
                             <button class="btn btn-danger btn-sm">Remove</button>
@@ -35,9 +34,29 @@
                     </td>
                 </tr>
                 @endforeach
-                <!-- Add more items as needed -->
             </tbody>
         </table>
+    </div>
+
+    <!-- Form Kupon -->
+    <div class="mt-4">
+        <form action="{{ route('cart.applyCoupon') }}" method="POST">
+            @csrf
+            <div class="d-flex">
+                <input type="text" name="coupon_code" class="form-control me-2" placeholder="Enter coupon code" required>
+                <button type="submit" class="btn btn-success">Apply Coupon</button>
+            </div>
+        </form>
+
+        @if(session('discount'))
+        <div class="alert alert-success mt-2">
+            Coupon applied! You get a discount of: <strong>@rupiah(session('discount'))</strong>
+        </div>
+        @elseif(session('error'))
+        <div class="alert alert-danger mt-2">
+            {{ session('error') }}
+        </div>
+        @endif
     </div>
 
     <div class="d-flex justify-content-between align-items-center mt-4">
@@ -45,7 +64,7 @@
             <a href="{{ route('products.index') }}" class="btn btn-secondary">Continue Shopping</a>
         </div>
         <div>
-            <h5>Total: <span class="text-success">@rupiah($cart->sum('product.price'))</span></h5>
+            <h5>Total: <span class="text-success">@rupiah($cart->sum(function ($item) { return $item->product->price * $item->quantity; }) - session('discount', 0))</span></h5>
             <a href="{{ route('cart.createOrder') }}" class="btn btn-primary">Checkout</a>
         </div>
     </div>

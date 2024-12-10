@@ -5,6 +5,8 @@ use App\Models\User;
 use App\Observers\UserObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
+use Filament\Support\Assets\Css;
+use Filament\Support\Facades\FilamentAsset;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +15,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        FilamentAsset::register([
+            Css::make('example-external-stylesheet', 'https://example.com/external.css'),
+            Css::make('example-local-stylesheet', asset('css/local.css')),
+        ]);
+
+
     }
 
     /**

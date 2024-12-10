@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Cart extends Model
 {
     protected $fillable = ['user_id', 'product_id', 'quantity'];
-    
+
     /**
      * Get all of the comments for the Cart
      *
@@ -22,4 +22,5 @@ class Cart extends Model
     {
         return $this->belongsTo(User::class);
     }
+
 }

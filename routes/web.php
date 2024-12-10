@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Livewire\CreateCustomRequest;
 
 Route::get('/', function () {
     return view('welcome');
@@ -15,5 +16,10 @@ Route::get('/cart/{id}/destroy', ['App\Http\Controllers\CartController', 'destro
 Route::get('/cart-clear', ['App\Http\Controllers\CartController', 'clear'])->name('cart.clear');
 
 Route::get('/checkout', ['App\Http\Controllers\CheckoutController', 'index'])->name('cart.index');
+Route::post('/checkout/apply-coupon', ['App\Http\Controllers\CheckoutController', 'applyCoupon'])->name('cart.applyCoupon');  // Menambahkan kupon ke checkout
 Route::get('/checkout/createOrder', ['App\Http\Controllers\CheckoutController', 'createOrder'])->name('cart.createOrder');
 Route::get('/checkout/createInvoice/{id}', ['App\Http\Controllers\CheckoutController', 'createInvoice'])->name('cart.createInvoice');
+
+
+// Route untuk halaman pemesanan
+Route::get('/order-custom-design', CreateCustomRequest::class)->name('order.custom');

@@ -35,7 +35,6 @@ class UserResource extends Resource
                     ->label('Deskripsi Pekerjaan')
 
                     ->options(\App\Models\JobDesc::pluck('name', 'id')->toArray())
-                    ->required()
                     ->searchable()
                     ->placeholder('Pilih Deskripsi Pekerjaan'),
 
@@ -56,6 +55,13 @@ class UserResource extends Resource
                     ->password()
                     ->required()
                     ->maxLength(255),
+                    Forms\Components\Select::make('membership_status')
+                    ->label('Status Member')
+                    ->options([
+                        'member' => 'Member',
+                        'non_member' => 'Non Member',
+                    ])
+                    ->required(),
             ]);
             $data = $request->validate([
                 'pekerja.name' => 'required|string|max:255',
@@ -83,9 +89,17 @@ class UserResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('membership_status')
+                    ->label('Status Member')
+                    ->searchable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('membership_status')
+                ->options([
+                    'member' => 'Member',
+                    'non_member' => 'Non Member',
+                ])
+                ->default('non_member'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

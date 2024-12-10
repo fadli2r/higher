@@ -30,6 +30,7 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->sortable()
@@ -53,7 +54,11 @@ class OrderResource extends Resource
                     ->searchable()
             ])
             ->filters([
-                //
+                // Filter berdasarkan user yang sedang login
+            Tables\Filters\Filter::make('user_id')
+            ->label('My Orders')
+            ->query(fn (Builder $query) => $query->where('user_id', auth()->id())) // Use auth()->id() directly
+
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
