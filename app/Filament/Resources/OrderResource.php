@@ -11,6 +11,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class OrderResource extends Resource
@@ -22,9 +24,29 @@ class OrderResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                //
-            ]);
+        ->schema([
+            // User Select: Admin can choose a user for the order (optional)
+            Select::make('user_id')
+                ->label('User')
+                ->relationship('user', 'name') // Assumes `Order` has a `user()` relationship defined
+                ->required(),
+
+            // Total Price: Admin can edit the total price of the order
+            TextInput::make('total_price')
+                ->label('Total Price')
+                ->numeric()
+                ->required(),
+
+            // Order Status: Admin can choose the order status (pending, completed, etc.)
+            Select::make('order_status')
+                ->label('Order Status')
+                ->options([
+                    'pending' => 'Pending',
+                    'completed' => 'Completed',
+                    'canceled' => 'Canceled',
+                ])
+                ->required(),
+        ]);
     }
 
     public static function table(Table $table): Table

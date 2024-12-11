@@ -18,4 +18,14 @@ class ProductWorkflow extends Model
     {
         return $this->belongsTo(Product::class, 'product_id', 'id');
     }
+
+    public function tasks()
+    {
+        return $this->hasMany(WorkerTask::class); // Relasi ke WorkerTask
+    }
+
+    public function workerTasks()
+    {
+        return $this->hasMany(WorkerTask::class, 'product_workflow_id');
+    }
 }

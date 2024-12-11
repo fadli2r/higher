@@ -39,6 +39,7 @@ class User extends Authenticatable implements HasAvatar
         'name',
         'email',
         'password',
+        'membership_status',
         'avatar_url', // or column name according to config('filament-edit-profile.avatar_column', 'avatar_url')
 
     ];
@@ -78,6 +79,11 @@ class User extends Authenticatable implements HasAvatar
     public function role()
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);  // Relasi 'hasMany' berarti satu user bisa memiliki banyak order
     }
 
     public function pekerja()

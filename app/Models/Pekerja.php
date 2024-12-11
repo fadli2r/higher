@@ -16,6 +16,17 @@ class Pekerja extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function categoryWorkers()
+    {
+        return $this->hasMany(CategoryWorker::class, 'worker_id');
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(WorkerTask::class); // Setiap pekerja bisa memiliki banyak tugas
+    }
+
 }

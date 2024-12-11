@@ -20,6 +20,7 @@ class CalculateEstimatedDaysJob implements ShouldQueue
 
     public function handle()
     {
+        ini_set('memory_limit', '256M');
         // Menghitung total durasi dari workflows
         $totalDuration = $this->product->workflows()->sum('step_duration');
 
