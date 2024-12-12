@@ -28,5 +28,9 @@ class Pekerja extends Model
     {
         return $this->hasMany(WorkerTask::class); // Setiap pekerja bisa memiliki banyak tugas
     }
+    public function files()
+    {
+        return $this->hasMany(File::class, 'worker_id');  // Relasi dengan worker_id
+    }
 
 }

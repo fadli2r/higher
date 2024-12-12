@@ -15,10 +15,8 @@
         <div class="logo">Logo</div>
         <nav class="menu">
             <ul>
-                <li><a href="#">Beranda</a></li>
-                <li><a href="#">Produk</a></li>
-                <li><a href="#">Tentang Kami</a></li>
-                <li><a href="/edit-profile">Kontak</a></li>
+                <li><a href="/my-orders">My Orders</a></li>
+                <li><a href="/products">Service</a></li>
             </ul>
         </nav>
         <div class="icons">

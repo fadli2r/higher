@@ -10,6 +10,7 @@ class WorkerTask extends Model
         'worker_id', 'order_id', 'task_description', 'progress', 'deadline',
         'task_count', 'product_workflow_id', 'created_at', 'updated_at'
     ];
+    protected $dates = [ 'deadline' => 'datetime'];
 
     public function order()
     {
@@ -28,4 +29,13 @@ class WorkerTask extends Model
     {
         return $this->belongsTo(ProductWorkflow::class, 'product_workflow_id');
     }
+
+    public function files()
+    {
+        return $this->hasMany(File::class, 'task_id');
+    }
+    public function pekerja()
+{
+    return $this->belongsTo(Pekerja::class, 'worker_id');
+}
 }

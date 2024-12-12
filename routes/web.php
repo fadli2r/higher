@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Livewire\CreateCustomRequest;
+use App\Http\Controllers\MyOrders;
 
 Route::get('/', function () {
     return view('welcome');
@@ -23,3 +24,7 @@ Route::get('/checkout/createInvoice/{id}', ['App\Http\Controllers\CheckoutContro
 
 // Route untuk halaman pemesanan
 Route::get('/order-custom-design', CreateCustomRequest::class)->name('order.custom');
+
+// my orders
+Route::get('/my-orders', [MyOrders::class, 'index'])->name('myorders.index');
+Route::get('/order/{orderId}/progress', [MyOrders::class, 'showProgress'])->name('myorders.progress');
