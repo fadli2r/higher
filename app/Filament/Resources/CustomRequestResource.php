@@ -23,6 +23,7 @@ use Filament\Navigation\NavigationItem;
 class CustomRequestResource extends Resource
 {
     protected static ?string $model = CustomRequest::class;
+    protected static ?string $navigationGroup = 'Desaign Custom';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static function getNavigation(): array
