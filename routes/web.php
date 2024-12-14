@@ -28,3 +28,6 @@ Route::get('/order-custom-design', CreateCustomRequest::class)->name('order.cust
 // my orders
 Route::get('/my-orders', [MyOrders::class, 'index'])->name('myorders.index');
 Route::get('/order/{orderId}/progress', [MyOrders::class, 'showProgress'])->name('myorders.progress');
+
+
+// Worker
