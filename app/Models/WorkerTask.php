@@ -8,7 +8,7 @@ class WorkerTask extends Model
 {
     protected $fillable = [
         'worker_id', 'order_id', 'task_description', 'progress', 'deadline',
-        'task_count', 'product_workflow_id', 'created_at', 'updated_at'
+        'task_count', 'product_workflow_id','file_path', 'created_at', 'updated_at'
     ];
     protected $dates = [ 'deadline' => 'datetime'];
 
@@ -37,5 +37,9 @@ class WorkerTask extends Model
     public function pekerja()
 {
     return $this->belongsTo(Pekerja::class, 'worker_id');
+}
+public function revisions()
+{
+    return $this->hasMany(Revision::class, 'task_id');
 }
 }

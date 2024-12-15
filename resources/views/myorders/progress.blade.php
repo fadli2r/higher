@@ -124,29 +124,36 @@ ul {
             <!-- Display Deadline -->
             <p><strong>Deadline:</strong> {{ $task->deadline }}</p> <!-- Format tanggal -->
 
-            <!-- Revisi Form -->
-            <button class="btn btn-info mt-2" data-toggle="collapse" data-target="#revisi-{{ $task->id }}">Add Revisi</button>
+            <!-- Revisi Section -->
+            @if ($task->progress === 'revision_requested')
+    <!-- Tombol Revisi -->
+    <form action="{{ route('revisions.store') }}" method="POST" class="d-inline">
+        @csrf
+        <input type="hidden" name="task_id" value="{{ $task->id }}">
+        <textarea name="description" class="form-control mb-2" required placeholder="Masukkan revisi..."></textarea>
+        <button type="submit" class="btn btn-warning">Kirim Revisi</button>
+    </form>
 
-            <div id="revisi-{{ $task->id }}" class="collapse mt-2">
-                <form action="#" method="POST">
-                    @csrf
-                    <textarea name="revisi" class="form-control" placeholder="Write your revision..." required></textarea>
-                    <button type="submit" class="btn btn-primary mt-2">Submit Revisi</button>
-                </form>
-            </div>
+    <!-- Tombol Lanjutkan -->
+    <form action="{{ route('worker-tasks.complete', $task->id) }}" method="POST" class="d-inline">
+        @csrf
+        @method('PUT')
+        <button type="submit" class="btn btn-success">Lanjutkan</button>
+    </form>
+@endif
+
+
 
             <!-- Download Report Button -->
-            @if($task->pekerja->files->count() > 0) <!-- Menggunakan relasi pekerja -->
-                <div class="mt-3">
-                    @foreach($task->files as $file)
-                        <a href="{{ asset('storage/' . $file->file_path) }}" class="btn btn-success" download>
-                            Download Report ({{ basename($file->file_path) }})
-                        </a>
-                    @endforeach
-                </div>
-            @else
-                <p class="mt-2 text-muted">No report available for this task.</p>
-            @endif
+            <div class="mt-3">
+                @if($task->file_path)
+                    <a href="{{ asset('storage/' . $task->file_path) }}" class="btn btn-success" download>
+                        Download Report ({{ basename($task->file_path) }})
+                    </a>
+                @else
+                    <p class="mt-2 text-muted">No report available for this task.</p>
+                @endif
+            </div>
         </div>
         @endforeach
     </div>

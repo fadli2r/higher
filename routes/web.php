@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Livewire\CreateCustomRequest;
 use App\Http\Controllers\MyOrders;
+use App\Http\Controllers\RevisionController;
+use App\Http\Controllers\WorkerTaskController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -29,5 +31,6 @@ Route::get('/order-custom-design', CreateCustomRequest::class)->name('order.cust
 Route::get('/my-orders', [MyOrders::class, 'index'])->name('myorders.index');
 Route::get('/order/{orderId}/progress', [MyOrders::class, 'showProgress'])->name('myorders.progress');
 
-
+Route::resource('revisions', RevisionController::class)->only('store');
+Route::put('worker-tasks/{id}/complete', [WorkerTaskController::class, 'complete'])->name('worker-tasks.complete');
 // Worker

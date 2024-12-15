@@ -6,6 +6,7 @@ use App\Filament\Resources\WorkerTaskResource\Pages;
 use App\Filament\Resources\WorkerTaskResource\RelationManagers;
 use App\Models\WorkerTask;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -38,11 +39,11 @@ class WorkerTaskResource extends Resource
                     ])
                     ->required(),
 
-                Forms\Components\FileUpload::make('files')
-                    ->label('Upload Files')
-                    ->directory('task_files')
-                    ->multiple()
-                    ->maxFiles(5),
+                    FileUpload::make('file_path')
+                    ->label('Upload File')
+                    ->directory('uploads/tasks')
+                    ->preserveFilenames()
+                    ->nullable(),
             ]);
     }
 

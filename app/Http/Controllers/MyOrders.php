@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\WorkerTask;
+use App\Models\Revision;
 use Illuminate\Http\Request;
 
 class MyOrders extends Controller
@@ -23,5 +24,21 @@ class MyOrders extends Controller
         $order = Order::with('workerTasks.productWorkflow')->findOrFail($orderId);
 
         return view('myorders.progress', compact('order'));
+    }
+
+    public function storeRevision(Request $request, WorkerTask $task)
+    {
+        $request->validate([
+            'description' => 'required|string|max:1000',
+        ]);
+
+        Revision::create([
+            'task_id' => $task->id,
+            'requested_by' => auth()->id(),
+            'description' => $request->description,
+            'status' => 'pending',
+        ]);
+
+        return back()->with('success', 'Permintaan revisi berhasil dikirim.');
     }
 }
