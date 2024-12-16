@@ -16,7 +16,13 @@
         <nav class="menu">
             <ul>
                 <li><a href="/my-orders">My Orders</a></li>
+                <li>
+                    <a href="{{ route('custom-design.index') }}">Custom Desain</a>
+                </li>
                 <li><a href="/products">Service</a></li>
+                @if(auth()->check() && auth()->user()->membership_status === 'member')
+    <li><a href="{{ route('promos.index') }}">Promo</a></li>
+@endif
             </ul>
         </nav>
         <div class="icons">

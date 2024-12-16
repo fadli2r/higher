@@ -38,5 +38,11 @@ class Product extends Model
             $product->calculateEstimatedDays();
         });
     }
+
+    public function feedbacks()
+{
+    return $this->hasMany(Feedback::class);
+}
+
 }
 

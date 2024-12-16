@@ -26,6 +26,6 @@ class CustomRequestItem extends Model
     // Relasi dengan CustomSize (ukuran desain)
     public function customSize()
     {
-        return $this->belongsTo(CustomSize::class);
+        return $this->belongsTo(CustomSize::class, 'custom_size_id');
     }
 }

@@ -41,7 +41,7 @@ class CartController extends Controller
             flash()->warning('Hanya bisa menambahkan produk yang sama sekali');
             return redirect()->route('products.index');
         }
-        
+
     }
 
     /**
@@ -81,7 +81,7 @@ class CartController extends Controller
      */
     public function destroy($id)
     {
-        $cart = Cart::find($id)->delete();        
+        $cart = Cart::find($id)->delete();
         flash()->success('Berhasil menghapus produk dari keranjang');
 
         return redirect()->route('cart.index');

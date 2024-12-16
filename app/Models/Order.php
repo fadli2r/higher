@@ -12,6 +12,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'product_id',
+        'custom_request_id',
         'worker_id',
         'total_price',
         'order_status',
@@ -25,6 +26,10 @@ class Order extends Model
         return $this->belongsTo(Product::class, 'product_id'); // Mengarah ke produk
     }
 
+public function customRequest()
+{
+    return $this->belongsTo(CustomRequest::class);
+}
     /**
      * Relasi ke user (pelanggan).
      */

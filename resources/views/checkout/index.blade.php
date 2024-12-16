@@ -77,6 +77,7 @@ ul {
 @section('content')
 <div class="container mt-5">
     <h1 class="text-center">Shopping Cart</h1>
+
     <div class="table-responsive mt-4">
         <table class="table table-bordered">
             <thead class="table-dark">
@@ -88,26 +89,43 @@ ul {
                 </tr>
             </thead>
             <tbody>
-                @foreach ($cart as $item)
+                @forelse ($cart as $item)
                 <tr>
                     <td>
                         <div class="d-flex align-items-center">
-                            <img src="https://via.placeholder.com/60" alt="Item" class="img-thumbnail me-3"
-                                style="width: 60px;">
-                            <span>{{ $item->product->title }}</span>
+                            <img src="{{ $item->product->image_url ?? 'https://via.placeholder.com/60' }}"
+                                 alt="Item" class="img-thumbnail me-3" style="width: 60px;">
+
+                            <span>
+                                {{ $item->product?->title ?? $item->customRequest?->description }}
+                            </span>
                         </div>
                     </td>
+
                     <td>
                         <input type="number" class="form-control" value="{{ $item->quantity }}" min="1" disabled>
                     </td>
-                    <td>@rupiah($item->product->price * $item->quantity)</td>
+
                     <td>
-                        <a href="{{ route('cart.destroy', $item->id) }}">
-                            <button class="btn btn-danger btn-sm">Remove</button>
-                        </a>
+                        @php
+                            $price = $item->product?->price ?? $item->customRequest?->price;
+                        @endphp
+                        @if($price)
+                            @rupiah($price * $item->quantity)
+                        @else
+                            <span class="text-muted">Not Available</span>
+                        @endif
+                    </td>
+
+                    <td>
+                        <a href="{{ route('cart.destroy', $item->id) }}" class="btn btn-danger btn-sm">Remove</a>
                     </td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="4" class="text-center">Your cart is empty.</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
@@ -134,13 +152,18 @@ ul {
     </div>
 
     <div class="d-flex justify-content-between align-items-center mt-4">
-        <div>
-            <a href="{{ route('products.index') }}" class="btn btn-secondary">Continue Shopping</a>
-        </div>
-        <div>
-            <h5>Total: <span class="text-success">@rupiah($cart->sum(function ($item) { return $item->product->price * $item->quantity; }) - session('discount', 0))</span></h5>
-            <a href="{{ route('cart.createOrder') }}" class="btn btn-primary">Checkout</a>
-        </div>
+        <a href="{{ route('products.index') }}" class="btn btn-secondary">Continue Shopping</a>
+
+        <h5>
+            Total:
+            <span class="text-success">
+                @rupiah($cart->sum(function ($item) {
+                    return ($item->product?->price ?? $item->customRequest?->price) * $item->quantity;
+                }) - session('discount', 0))
+            </span>
+        </h5>
+
+        <a href="{{ route('cart.createOrder') }}" class="btn btn-primary">Checkout</a>
     </div>
 </div>
 @endsection

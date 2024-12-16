@@ -128,8 +128,13 @@ ul {
             @if($order->order_status == 'pending' || $order->order_status == 'in_progress')
             <a href="{{ route('cart.createInvoice', $order->id) }}" class="btn btn-primary order-button">Bayar</a>
             @endif
+            @if($order->order_status === 'completed' && !$order->product->feedbacks->contains('user_id', auth()->id()))
+    <a href="{{ route('feedback.create', $order->id) }}" class="btn btn-primary">Beri Ulasan</a>
+@endif
+
         </div>
         @endforeach
+
     </div>
 </div>
 @endsection

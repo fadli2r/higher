@@ -50,22 +50,50 @@ class CheckoutController extends Controller
 
         $discount = session('discount', 0);
         $totalPriceAfterDiscount = $cart->sum(function ($item) {
-            return $item->product->price * $item->quantity;
+            return ($item->product_id ? $item->product->price : $item->customRequest->price) * $item->quantity;
         }) - $discount;
 
         foreach ($cart as $item) {
-            Order::create([
-                'user_id' => auth()->id(),
-                'product_id' => $item->product_id,
-                // 'worker_id' => $item->product->worker_id,
-                'total_price' => $totalPriceAfterDiscount, // Harga setelah diskon
-                'order_status' => 'pending',
-            ]);
+            if ($item->product_id) {
+                // Proses Produk Biasa
+                Order::create([
+                    'user_id' => auth()->id(),
+                    'product_id' => $item->product_id,
+                    'total_price' => $item->product->price * $item->quantity,
+                    'order_status' => 'pending',
+                ]);
+            } elseif ($item->custom_request_id) {
+                // Proses Custom Desain
+                Order::create([
+                    'user_id' => auth()->id(),
+                    'custom_request_id' => $item->custom_request_id,
+                    'total_price' => $item->customRequest->price * $item->quantity,
+                    'order_status' => 'pending',
+                ]);
+            }
         }
 
         Cart::where('user_id', auth()->id())->delete();
         flash()->success('Berhasil membuat order, silahkan bayar sekarang');
         return redirect()->to('/admin/orders');
+    }
+
+    public function createCustomOrder() {
+        $cart = Cart::where('user_id', auth()->id())->whereNotNull('custom_request_id')->with('customRequest')->get();
+
+        foreach ($cart as $item) {
+            Order::create([
+                'user_id' => auth()->id(),
+                'custom_request_id' => $item->custom_request_id,
+                'total_price' => $item->customRequest->price * $item->quantity,
+                'order_status' => 'pending',
+            ]);
+        }
+
+        Cart::where('user_id', auth()->id())->whereNotNull('custom_request_id')->delete();
+
+        flash()->success('Berhasil membuat order desain kustom, silahkan bayar sekarang');
+        return redirect()->route('orders.index');
     }
 
     function createInvoice($id) {

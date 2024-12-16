@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CustomDesignController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\CreateCustomRequest;
 use App\Http\Controllers\MyOrders;
 use App\Http\Controllers\RevisionController;
 use App\Http\Controllers\WorkerTaskController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\PromoController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -34,3 +38,14 @@ Route::get('/order/{orderId}/progress', [MyOrders::class, 'showProgress'])->name
 Route::resource('revisions', RevisionController::class)->only('store');
 Route::put('worker-tasks/{id}/complete', [WorkerTaskController::class, 'complete'])->name('worker-tasks.complete');
 // Worker
+
+// FEEDBACK
+Route::get('/my-orders/review/{order}', [FeedbackController::class, 'create'])->name('feedback.create');
+Route::post('/my-orders/review/{order}', [FeedbackController::class, 'store'])->name('feedback.store');
+
+// PROMOS
+Route::get('/promos', [PromoController::class, 'index'])->name('promos.index');
+
+//Custom Design
+Route::resource('/custom-design', CustomDesignController::class);
+Route::post('/checkout/custom-design', [CheckoutController::class, 'createCustomOrder'])->name('checkout.createCustomOrder');

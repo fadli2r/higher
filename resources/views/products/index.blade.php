@@ -220,14 +220,22 @@ button:hover {
         <h4>Shopping Cart</h4>
     <ul id="cart-items" class="list-group">
         @foreach ($cart as $item)
-            <li class="list-group-item">
+        <li class="list-group-item">
+            @if ($item->product)
                 {{ $item->product->title }} - @rupiah($item->product->price) x {{ $item->quantity }}
-            </li>
-        @endforeach
+            @else
+                <em>Produk tidak ditemukan</em>
+            @endif
+        </li>
+    @endforeach
     </ul>
     <p>Items: <span id="total-items">{{ count($cart) }}</span></p>
-    <p>Total: Rp.<span id="total-price">@rupiah($cart->sum(function ($item) { return $item->product->price * $item->quantity; }))</span></p>
-    <a href="{{ route('cart.clear') }}">
+    <p>Total: Rp.<span id="total-price">
+        @rupiah($cart->sum(function ($item) {
+            return $item->product ? $item->product->price * $item->quantity : 0;
+        }))
+    </span></p>
+        <a href="{{ route('cart.clear') }}">
         <button class="btn btn-danger" id="clear-cart">Clear Cart</button>
     </a>
     <a href="{{ route('cart.index') }}">

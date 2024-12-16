@@ -59,7 +59,18 @@ class OrderResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('product.title')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->getStateUsing(function ($record) {
+                        if ($record->product_id) {
+                            return $record->product->title;
+                        }
+
+                        if ($record->custom_request_id) {
+                            return $record->customRequest->name;
+                        }
+
+                        return 'Tidak Diketahui';
+                    }),
                 Tables\Columns\TextColumn::make('total_price')
                     ->sortable()
                     ->searchable(),
