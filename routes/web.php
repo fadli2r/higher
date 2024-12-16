@@ -9,6 +9,7 @@ use App\Http\Controllers\RevisionController;
 use App\Http\Controllers\WorkerTaskController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\PromoController;
+use App\Http\Controllers\WebhookController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -49,3 +50,5 @@ Route::get('/promos', [PromoController::class, 'index'])->name('promos.index');
 //Custom Design
 Route::resource('/custom-design', CustomDesignController::class);
 Route::post('/checkout/custom-design', [CheckoutController::class, 'createCustomOrder'])->name('checkout.createCustomOrder');
+
+Route::post('/webhook', [WebhookController::class, 'webhook'])->name('webhook');

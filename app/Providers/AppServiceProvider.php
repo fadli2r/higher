@@ -30,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \URL::forceScheme('https');
+
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::except([
+            'webhook'
+        ]);
+        
         Order::observe(OrderObserver::class);  // Daftarkan observer untuk model Order
 
         User::observe(UserObserver::class);
