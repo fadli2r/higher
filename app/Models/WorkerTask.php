@@ -11,7 +11,27 @@ class WorkerTask extends Model
         'task_count', 'product_workflow_id','file_path', 'created_at', 'updated_at'
     ];
     protected $dates = [ 'deadline' => 'datetime'];
+    protected static function booted()
+    {
+        static::updated(function (WorkerTask $workerTask) {
+            if ($workerTask->progress === 'completed') {
+                // Dapatkan semua task dari order yang sama
+                $orderTasks = self::where('order_id', $workerTask->order_id)->get();
 
+                // Periksa apakah semua task selesai
+                $allTasksCompleted = $orderTasks->every(fn ($task) => $task->progress === 'completed');
+
+                if ($allTasksCompleted) {
+                    // Update status order menjadi completed
+                    $order = Order::find($workerTask->order_id);
+                    if ($order && $order->order_status !== 'completed') {
+                        $order->order_status = 'completed';
+                        $order->save();
+                    }
+                }
+            }
+        });
+    }
     public function order()
     {
         return $this->belongsTo(Order::class);

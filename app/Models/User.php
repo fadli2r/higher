@@ -85,6 +85,20 @@ class User extends Authenticatable implements HasAvatar
     {
         return $this->hasMany(Order::class);  // Relasi 'hasMany' berarti satu user bisa memiliki banyak order
     }
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+    public function subscriptions()
+{
+    return $this->hasMany(Subscriptions::class);
+}
+
     public function coupons()
     {
         return $this->hasMany(Coupon::class);

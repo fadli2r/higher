@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
+    protected static ?string $navigationGroup = 'Transaksi';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -42,6 +43,7 @@ class OrderResource extends Resource
                 ->label('Order Status')
                 ->options([
                     'pending' => 'Pending',
+                    'in_progress' => 'Proses',
                     'completed' => 'Completed',
                     'canceled' => 'Canceled',
                 ])
@@ -76,7 +78,6 @@ class OrderResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('order_status')
                     ->formatStateUsing(fn ($record) => \Str::upper($record->order_status))
-                    ->description(fn ($record): string => (!$record->transaction) ? 'Belum Ada Transaksi' : $record->transaction->invoice_number)
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -95,12 +96,7 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('createInvoice')
-                    ->label('Bayar') // Button label
-                    ->color('primary') // Button color
-                    ->icon('heroicon-o-credit-card') // Optional: Icon
-                    ->url(fn ($record) => ($record->transaction->invoice_url) ?? route('cart.createInvoice', $record->id)) // Custom route
-                    ->openUrlInNewTab(), // Optional: Open in new tab
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

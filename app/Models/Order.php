@@ -4,19 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'product_id',
-        'custom_request_id',
-        'worker_id',
-        'total_price',
-        'order_status',
-    ];
+    protected $fillable = ['user_id', 'product_id', 'custom_request_id', 'total_price', 'order_status', 'transaction_id', 'created_at', 'updated_at'];
 
     /**
      * Relasi ke produk.
@@ -51,8 +45,9 @@ public function customRequest()
      */
     public function transaction()
     {
-        return $this->hasOne(Transaction::class, 'order_id', 'id'); // Relasi ke transaksi
+        return $this->belongsTo(Transaction::class);
     }
+
     public function workerTasks()
     {
         return $this->hasMany(WorkerTask::class);
@@ -64,6 +59,11 @@ public function customRequest()
     {
         return $this->product->category(); // Mengarah ke kategori produk yang terkait
     }
+    public function invoices()
+{
+    return $this->belongsToMany(Invoice::class, 'invoice_order', 'order_id', 'invoice_id');
+}
+
 
     /**
      * Mengambil informasi pekerja melalui category_worker (jika diperlukan)
@@ -84,4 +84,5 @@ public function customRequest()
     {
         return $query->with(['product.category', 'worker.user', 'worker.categoryWorkers']);
     }
+
 }

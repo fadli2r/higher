@@ -26,51 +26,65 @@ class OrderObserver
      * Handle the Order "updated" event.
      */
     public function updated(Order $order): void
-    {
+{
+    // Pastikan status order adalah "in_progress"
+    if ($order->order_status === 'in_progress') {
+        // Ambil data lengkap order dengan relasi yang diperlukan
+        $order = Order::with(['product.workflows', 'product.category', 'worker'])->find($order->id);
 
-        // Pastikan order sudah selesai (completed)
-        if ($order->order_status === 'completed') {
-            // Mendapatkan produk yang dipesan dalam order
-            $order = Order::with('product.workflows', 'worker')->find($order->id);
-
-            $product = $order->product;
-            $category = $product->category;
-
-            $worker = CategoryWorker::where('category_id', $category->id)
-                                     ->first()?->worker;
-
-            // Jika pekerja ditemukan, tetapkan pekerja ke order dan buat tugas untuk pekerja
-            if ($worker && $worker->user) {
-                // Menetapkan pekerja ke order
-                $order->worker_id = $worker->id;
-                $order->save();  // Simpan perubahan pada order
-
-                // Mendapatkan semua workflows dari produk
-                $workflows = ProductWorkflow::where('product_id', $product->id)
-                    ->orderBy('step_order') // Pastikan urutan stepnya benar
-                    ->get();
-
-                // Menyimpan semua worker tasks berdasarkan workflows produk
-                foreach ($workflows as $workflow) {
-                    WorkerTask::create([
-                        'worker_id' => $worker->id,
-                        'order_id' => $order->id,
-                        'task_description' => 'Tugas untuk produk: ' . $product->title . ' - Step: ' . $workflow->step_name,
-                        'progress' => 'not_started',  // Status awal
-                        'deadline' => now()->addDays($workflow->step_duration),  // Deadline berdasarkan durasi step
-                        'task_count' => 1,  // Anggap satu task untuk setiap step
-                        'product_workflow_id' => $workflow->id,
-                    ]);
-                }
-            }
-
-            // Mendapatkan user yang terkait dengan order
-            $this->updateUserMembershipStatus($order->user);
-
-
+        if (!$order || !$order->product) {
+            return; // Jika tidak ada produk terkait, hentikan proses
         }
 
+        $product = $order->product;
+
+        // Ambil pekerja berdasarkan kategori produk
+        $worker = CategoryWorker::where('category_id', $product->category->id ?? null)
+                                ->first()?->worker;
+
+        if ($worker) {
+            // Update worker_id pada order jika belum ada
+            if (!$order->worker_id) {
+                $order->worker_id = $worker->id;
+                $order->save();
+            }
+
+            // Tambahkan workflows ke tabel worker_tasks jika belum ada
+            $this->assignWorkflowsToWorker($order, $worker);
+        }
+        $this->updateUserMembershipStatus($order->user);
+
     }
+}
+
+private function assignWorkflowsToWorker(Order $order, $worker)
+{
+    $existingTaskIds = WorkerTask::where('order_id', $order->id)
+        ->pluck('product_workflow_id')
+        ->toArray();
+
+    $workflows = ProductWorkflow::where('product_id', $order->product_id)
+        ->whereNotIn('id', $existingTaskIds) // Hindari workflow yang sudah ada
+        ->orderBy('step_order')
+        ->get();
+
+    $lastDeadline = now();
+
+    foreach ($workflows as $workflow) {
+        $lastDeadline = $lastDeadline->addDays($workflow->step_duration);
+
+        WorkerTask::create([
+            'worker_id' => $worker->id,
+            'order_id' => $order->id,
+            'task_description' => 'Tugas untuk produk: ' . $order->product->title . ' - Step: ' . $workflow->step_name,
+            'progress' => 'not_started',
+            'deadline' => $lastDeadline,
+            'task_count' => 1,
+            'product_workflow_id' => $workflow->id,
+        ]);
+    }
+}
+
 
     protected function updateUserMembershipStatus($user)
     {

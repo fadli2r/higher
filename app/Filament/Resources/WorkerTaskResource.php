@@ -43,6 +43,8 @@ class WorkerTaskResource extends Resource
                     ->label('Upload File')
                     ->directory('uploads/tasks')
                     ->preserveFilenames()
+                    ->visibility('public') // Pastikan visibilitasnya benar
+
                     ->nullable(),
             ]);
     }

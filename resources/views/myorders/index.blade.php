@@ -119,11 +119,6 @@ ul {
                     {{ getOrderProgressText($order->id) }} - {{ getOrderProgressWidth($order->id) }}%
                 </div>
             </div>
-            <div class="progress" >
-                <div class="bar" style="width:35%">
-                    <p class="percent">35%</p>
-                </div>
-            </div>
             <a href="{{ route('myorders.progress', $order->id) }}" class="btn btn-info mt-2">Lihat Progress</a>
             @if($order->order_status == 'pending' || $order->order_status == 'in_progress')
             <a href="{{ route('cart.createInvoice', $order->id) }}" class="btn btn-primary order-button">Bayar</a>

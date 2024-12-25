@@ -47,6 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+
             ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
@@ -82,10 +83,13 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+
             ])
+
             ->registration(AuthRegister::class)
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+
             ]);
     }
 

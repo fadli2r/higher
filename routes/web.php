@@ -9,7 +9,9 @@ use App\Http\Controllers\RevisionController;
 use App\Http\Controllers\WorkerTaskController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\PromoController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\InvoiceController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -52,3 +54,10 @@ Route::resource('/custom-design', CustomDesignController::class);
 Route::post('/checkout/custom-design', [CheckoutController::class, 'createCustomOrder'])->name('checkout.createCustomOrder');
 
 Route::post('/webhook', [WebhookController::class, 'webhook'])->name('webhook');
+
+//Transaction
+Route::get('/transaction/{transaction}/pay', [CheckoutController::class, 'payTransaction'])->name('transaction.pay');
+
+// Invoice
+Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+Route::get('/invoices/{invoice}/download', [InvoiceController::class, 'generatePdf'])->name('invoices.download');

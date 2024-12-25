@@ -3,15 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Cart;
-use App\Models\Coupon;
-
+use App\Models\{Cart, Coupon, Invoice, Order, Subscriptions, Transaction};
 use Xendit\Xendit;
-use App\Models\{Order, Transaction};
 
 class CheckoutController extends Controller
 {
-    function index() {
+    public function index()
+    {
         $cart = Cart::where('user_id', auth()->id())->with('product')->get();
 
         return view('checkout.index', ['cart' => $cart]);
@@ -19,11 +17,9 @@ class CheckoutController extends Controller
 
     public function applyCoupon(Request $request)
     {
-        // Validasi kode kupon
         $coupon = Coupon::where('code', $request->coupon_code)->first();
 
         if ($coupon && $coupon->expires_at > now() && $coupon->is_active) {
-            // Hitung diskon
             $discount = 0;
             $cartTotal = Cart::where('user_id', auth()->id())->get()->sum(function ($item) {
                 return $item->product->price * $item->quantity;
@@ -35,7 +31,6 @@ class CheckoutController extends Controller
                 $discount = ($coupon->discount_value / 100) * $cartTotal;
             }
 
-            // Simpan diskon di session
             session(['coupon_code' => $request->coupon_code]);
             session(['discount' => $discount]);
 
@@ -45,88 +40,129 @@ class CheckoutController extends Controller
         }
     }
 
-    function createOrder() {
-        $cart = Cart::where('user_id', auth()->id())->with('product')->get();
+    public function createOrder()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+        }
+
+        $cart = Cart::where('user_id', auth()->id())->with(['product', 'customRequest'])->get();
+
+        if ($cart->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
+        }
 
         $discount = session('discount', 0);
-        $totalPriceAfterDiscount = $cart->sum(function ($item) {
-            return ($item->product_id ? $item->product->price : $item->customRequest->price) * $item->quantity;
-        }) - $discount;
+        $totalPrice = 0;
+
+        $orders = [];
+        $subscriptions = [];
 
         foreach ($cart as $item) {
             if ($item->product_id) {
-                // Proses Produk Biasa
-                Order::create([
-                    'user_id' => auth()->id(),
-                    'product_id' => $item->product_id,
-                    'total_price' => $item->product->price * $item->quantity,
-                    'order_status' => 'pending',
-                ]);
+                if ($item->product->is_subscription) {
+                    $period = request()->input("subscription_period.{$item->id}", 'monthly');
+                    $price = $item->product->calculateSubscriptionPrice($period);
+
+                    $subscriptions[] = [
+                        'user_id' => auth()->id(),
+                        'product_id' => $item->product_id,
+                        'start_date' => now(),
+                        'end_date' => $period === 'monthly' ? now()->addMonth() : now()->addYear(),
+                        'status' => 'pending',
+                        'price' => $price,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                } else {
+                    $price = $item->product->price * $item->quantity;
+                    $orders[] = [
+                        'user_id' => auth()->id(),
+                        'product_id' => $item->product_id,
+                        'total_price' => $price,
+                        'order_status' => 'pending',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
             } elseif ($item->custom_request_id) {
-                // Proses Custom Desain
-                Order::create([
+                $price = $item->customRequest->price * $item->quantity;
+                $orders[] = [
                     'user_id' => auth()->id(),
                     'custom_request_id' => $item->custom_request_id,
-                    'total_price' => $item->customRequest->price * $item->quantity,
+                    'total_price' => $price,
                     'order_status' => 'pending',
-                ]);
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
             }
+
+            $totalPrice += $price;
         }
+
+        $totalPriceAfterDiscount = $totalPrice - $discount;
+
+        // Buat transaksi
+        $transaction = Transaction::create([
+            'user_id' => auth()->id(),
+            'total_price' => $totalPriceAfterDiscount,
+            'payment_status' => 'pending',
+
+        ]);
+
+
+        // Simpan orders
+        foreach ($orders as &$order) {
+            $order['transaction_id'] = $transaction->id;
+        }
+        Order::insert($orders);
+
+        // Simpan subscriptions
+        foreach ($subscriptions as &$subscription) {
+            $subscription['transaction_id'] = $transaction->id;
+        }
+        Subscriptions::insert($subscriptions);
+
+        // Buat invoice
+        Invoice::create([
+            'invoice_number' => 'INV-' . strtoupper(uniqid()),
+            'transaction_id' => $transaction->id,
+            'user_id' => auth()->id(),
+            'status' => 'pending',
+            'total_amount' => $totalPriceAfterDiscount,
+            'due_date' => now()->addDays(7),
+            'issued_date' => now(),
+            'currency' => 'IDR',
+            'notes' => 'Terima kasih telah melakukan pembelian.',
+        ]);
 
         Cart::where('user_id', auth()->id())->delete();
-        flash()->success('Berhasil membuat order, silahkan bayar sekarang');
-        return redirect()->to('/admin/orders');
+
+        flash()->success('Berhasil membuat order, silahkan lanjutkan pembayaran.');
+        return redirect()->route('transaction.pay', ['transaction' => $transaction->id]);
     }
 
-    public function createCustomOrder() {
-        $cart = Cart::where('user_id', auth()->id())->whereNotNull('custom_request_id')->with('customRequest')->get();
-
-        foreach ($cart as $item) {
-            Order::create([
-                'user_id' => auth()->id(),
-                'custom_request_id' => $item->custom_request_id,
-                'total_price' => $item->customRequest->price * $item->quantity,
-                'order_status' => 'pending',
-            ]);
-        }
-
-        Cart::where('user_id', auth()->id())->whereNotNull('custom_request_id')->delete();
-
-        flash()->success('Berhasil membuat order desain kustom, silahkan bayar sekarang');
-        return redirect()->route('orders.index');
-    }
-
-    function createInvoice($id) {
-            // Set API Key
+    public function payTransaction($transactionId)
+    {
         Xendit::setApiKey(env('XENDIT_SECRET_KEY'));
-        $order = Order::find($id);
 
-        // Parameter invoice
+        $transaction = Transaction::findOrFail($transactionId);
+
+
         $params = [
-            'external_id' => 'invoice-' . time(),
+            'external_id' => 'transaction-' . $transaction->id,
             'payer_email' => auth()->user()->email,
-            'description' => "Pembelian Jasa Layanan ".$order->product->title,
-            'amount' => $order->total_price,
+            'description' => 'Pembayaran untuk transaksi #' . $transaction->id,
+            'amount' => $transaction->total_price,
         ];
 
-        try {
-            $invoice = \Xendit\Invoice::create($params);
+        $invoice = \Xendit\Invoice::create($params);
 
-            $transaction = Transaction::create([
-                'order_id' => $order->id,
-                'payment_status' => 'pending',
-                'invoice_url' => $invoice['invoice_url'],
-                'invoice_number' => $invoice['external_id'],
-                'invoice_id' => $invoice['id'],
-            ]);
+        $transaction->update([
+            'invoice_url' => $invoice['invoice_url'],
+            'invoice_id' => $invoice['id'],
+        ]);
 
-            return redirect()->to($invoice['invoice_url']);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        return redirect()->to($invoice['invoice_url']);
     }
 }

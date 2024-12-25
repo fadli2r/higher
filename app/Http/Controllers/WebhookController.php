@@ -10,26 +10,36 @@ class WebhookController extends Controller
 {
     public function webhook(Request $request)
     {
-        // Validasi signature atau data sesuai dokumentasi Xendit
+        // Validasi payload
         $data = $request->all();
 
+        // Temukan transaksi berdasarkan invoice_id dari payload
         $transaction = Transaction::where('invoice_id', $data['id'])->first();
-        
+
         if (!$transaction) {
-            return response()->json(['status' => 'failed'], 404);
+            return response()->json(['status' => 'failed', 'message' => 'Transaction not found'], 404);
         }
 
-        $transaction->update([
-            'payment_status' => "paid",
-            'updated_at' => now()
-        ]);
+        // Perbarui status transaksi berdasarkan payload
+        if ($data['status'] === 'PAID') {
+            $transaction->update([
+                'payment_status' => 'paid',
+            ]);
 
-        $transaction->order->update([
-            'order_status' => "in_progress",
-            'updated_at' => now()
-        ]);
+            // Perbarui semua order yang terkait dengan transaksi ini
+            $transaction->orders()->update([
+                'order_status' => 'in_progress',
+                'updated_at' => now(),
+            ]);
 
-        // Berikan response 200 OK
+        } elseif ($data['status'] === 'FAILED') {
+            $transaction->update([
+                'payment_status' => 'failed',
+            ]);
+
+            // Jika pembayaran gagal, Anda dapat mengambil tindakan tambahan di sini
+        }
+
         return response()->json(['status' => 'success'], 200);
     }
 }
