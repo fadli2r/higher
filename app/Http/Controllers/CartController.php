@@ -21,28 +21,31 @@ class CartController extends Controller
      * Show the form for creating a new resource.
      */
     public function create($id)
-    {
-        if (auth()->id() == null) {
-            return redirect()->route('login');
-        }
-
-        $cart = Cart::firstOrCreate([
-            'user_id' => auth()->id(),
-            'product_id' => $id,
-            'quantity' => 1
-        ]);
-
-        if ($cart->wasRecentlyCreated) {
-            flash()->success('Berhasil menambahkan produk ke keranjang');
-            return redirect()->route('products.index');
-        }
-
-        if ($cart->exists) {
-            flash()->warning('Hanya bisa menambahkan produk yang sama sekali');
-            return redirect()->route('products.index');
-        }
-
+{
+    // Cek apakah user sudah login
+    if (!auth()->check()) {
+        return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
     }
+
+    // Cek apakah produk sudah ada di keranjang
+    $cart = Cart::where('user_id', auth()->id())
+        ->where('product_id', $id)
+        ->first();
+
+    if ($cart) {
+        return redirect()->route('cart.index')->with('warning', 'Produk ini sudah ada di keranjang.');
+    }
+
+    // Tambahkan produk ke keranjang
+    Cart::create([
+        'user_id' => auth()->id(),
+        'product_id' => $id,
+        'quantity' => 1,
+    ]);
+
+    // Redirect langsung ke halaman checkout
+    return redirect()->route('cart.index')->with('success', 'Produk berhasil ditambahkan ke keranjang.');
+}
 
     /**
      * Store a newly created resource in storage.

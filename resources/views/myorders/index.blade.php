@@ -106,30 +106,50 @@ ul {
 
     </style>
 @section('content')
-<div class="container">
-    <h2>My Orders</h2>
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">My Orders</h2>
     <div class="list-group">
         @foreach($orders as $order)
         <div class="list-group-item">
-            <h5>Order #{{ $order->id }} - Status: {{ ucfirst($order->order_status) }}</h5>
+            <!-- Judul Order -->
+            <h5>
+                Order #{{ $order->id }} -
+                @if ($order->product)
+                    {{ $order->product->title }}
+                @elseif ($order->customRequest)
+                    Custom Request: {{ $order->customRequest->name }}
+                @else
+                    Produk tidak ditemukan
+                @endif
+                - Status: {{ ucfirst($order->order_status) }}
+            </h5>
 
             <!-- Progress Bar -->
             <div class="progress">
-                <div class="progress-bar" role="progressbar" style="width: {{ getOrderProgressWidth($order->id) }}%" aria-valuenow="{{ getOrderProgressWidth($order->id) }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" role="progressbar"
+                     style="width: {{ getOrderProgressWidth($order->id) }}%"
+                     aria-valuenow="{{ getOrderProgressWidth($order->id) }}"
+                     aria-valuemin="0" aria-valuemax="100">
                     {{ getOrderProgressText($order->id) }} - {{ getOrderProgressWidth($order->id) }}%
                 </div>
             </div>
-            <a href="{{ route('myorders.progress', $order->id) }}" class="btn btn-info mt-2">Lihat Progress</a>
-            @if($order->order_status == 'pending' || $order->order_status == 'in_progress')
-            <a href="{{ route('cart.createInvoice', $order->id) }}" class="btn btn-primary order-button">Bayar</a>
-            @endif
-            @if($order->order_status === 'completed' && !$order->product->feedbacks->contains('user_id', auth()->id()))
-    <a href="{{ route('feedback.create', $order->id) }}" class="btn btn-primary">Beri Ulasan</a>
-@endif
 
+            <!-- Status Pending -->
+            @if($order->order_status === 'pending')
+                <p class="text-danger mt-2">Harap selesaikan pembayaran terlebih dahulu.</p>
+            @else
+                <!-- Lihat Progress -->
+                <a href="{{ route('myorders.progress', $order->id) }}" class="btn btn-info mt-2">Lihat Progress</a>
+            @endif
+
+            <!-- Ulasan -->
+            @if($order->order_status === 'completed' && $order->product && !$order->product->feedbacks->contains('user_id', auth()->id()))
+                <a href="{{ route('feedback.create', $order->id) }}" class="btn btn-primary mt-2">Beri Ulasan</a>
+            @elseif ($order->order_status === 'completed' && $order->customRequest && !$order->customRequest->feedbacks->contains('user_id', auth()->id()))
+                <a href="{{ route('feedback.create', $order->id) }}" class="btn btn-primary mt-2">Beri Ulasan</a>
+            @endif
         </div>
         @endforeach
-
     </div>
 </div>
 @endsection

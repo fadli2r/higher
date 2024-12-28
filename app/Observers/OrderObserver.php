@@ -9,7 +9,7 @@ use App\Models\ProductWorkflow;
 use App\Models\User;
 use App\Models\CategoryWorker;  // Model CategoryWorker
 use App\Jobs\CreateWorkerTask;
-
+use App\Models\CustomRequest;
 use App\Models\Pekerja;  // Model pekerja (pekerjas)
 
 class OrderObserver
@@ -28,35 +28,95 @@ class OrderObserver
     public function updated(Order $order): void
 {
     // Pastikan status order adalah "in_progress"
-    if ($order->order_status === 'in_progress') {
-        // Ambil data lengkap order dengan relasi yang diperlukan
-        $order = Order::with(['product.workflows', 'product.category', 'worker'])->find($order->id);
-
-        if (!$order || !$order->product) {
-            return; // Jika tidak ada produk terkait, hentikan proses
+    if ($order->order_status === 'in_progress' && $order->getOriginal('order_status') !== 'in_progress') {
+        if ($order->custom_request_id) {
+            $this->handleCustomRequestWorkflow($order);
+        } else if ($order->product_id) {
+            $this->handleProductWorkflow($order);
         }
-
-        $product = $order->product;
-
-        // Ambil pekerja berdasarkan kategori produk
-        $worker = CategoryWorker::where('category_id', $product->category->id ?? null)
-                                ->first()?->worker;
-
-        if ($worker) {
-            // Update worker_id pada order jika belum ada
-            if (!$order->worker_id) {
-                $order->worker_id = $worker->id;
-                $order->save();
-            }
-
-            // Tambahkan workflows ke tabel worker_tasks jika belum ada
-            $this->assignWorkflowsToWorker($order, $worker);
-        }
-        $this->updateUserMembershipStatus($order->user);
-
     }
 }
 
+private function handleCustomRequestWorkflow(Order $order): void
+{
+    $customRequest = CustomRequest::find($order->custom_request_id);
+
+    if (!$customRequest) {
+        logger('CustomRequest not found for Order ID: ' . $order->id);
+        return;
+    }
+
+    $worker = CategoryWorker::whereHas('category', function ($query) {
+        $query->where('name', 'like', '%Desain%');
+    })->first()?->worker;
+
+    if (!$worker) {
+        logger('No worker found for category Desain in Order ID: ' . $order->id);
+        return;
+    }
+
+    // Ambil ID langkah workflow yang sudah ada di worker_tasks
+    $existingWorkflowSteps = WorkerTask::where('order_id', $order->id)
+        ->where('custom_request_id', $customRequest->id)
+        ->pluck('workflow_step_id')
+        ->toArray();
+
+    // Workflow Statis
+    $workflows = [
+        ['id' => 1, 'step_name' => 'Proses Ide', 'step_duration' => 2],
+        ['id' => 2, 'step_name' => 'Proses Desain', 'step_duration' => 5],
+        ['id' => 3, 'step_name' => 'Hasil Akhir', 'step_duration' => 1],
+    ];
+
+    // Filter workflow yang belum ada di worker_tasks
+    $filteredWorkflows = collect($workflows)
+        ->whereNotIn('id', $existingWorkflowSteps);
+
+    $lastDeadline = now();
+
+    foreach ($filteredWorkflows as $workflow) {
+        logger('Creating task for Workflow Step: ' . $workflow['step_name']);
+        $lastDeadline = $lastDeadline->addDays($workflow['step_duration']);
+
+        WorkerTask::create([
+            'worker_id' => $worker->id,
+            'order_id' => $order->id,
+            'custom_request_id' => $customRequest->id,
+            'task_description' => 'Tugas untuk Custom Request: ' . $customRequest->name . ' - Step: ' . $workflow['step_name'],
+            'workflow_step_id' => $workflow['id'], // Assign ID jika tersedia
+            'progress' => 'not_started',
+            'deadline' => $lastDeadline,
+            'task_count' => 1,
+        ]);
+    }
+}
+
+
+private function handleProductWorkflow(Order $order): void
+{
+    // Logika yang sudah ada untuk produk
+    $order = Order::with(['product.workflows', 'product.category', 'worker'])->find($order->id);
+
+    if (!$order || !$order->product) {
+        return;
+    }
+
+    $product = $order->product;
+
+    $worker = CategoryWorker::where('category_id', $product->category->id ?? null)
+                            ->first()?->worker;
+
+    if ($worker) {
+        if (!$order->worker_id) {
+            $order->worker_id = $worker->id;
+            $order->save();
+        }
+
+        $this->assignWorkflowsToWorker($order, $worker);
+    }
+
+    $this->updateUserMembershipStatus($order->user);
+}
 private function assignWorkflowsToWorker(Order $order, $worker)
 {
     $existingTaskIds = WorkerTask::where('order_id', $order->id)

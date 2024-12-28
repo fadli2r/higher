@@ -19,9 +19,9 @@ class Transaction extends Model
     }
 
     public function invoice()
-{
-    return $this->hasOne(Invoice::class);
-}
+    {
+        return $this->hasOne(Invoice::class, 'transaction_id');
+    }
 
 
 
@@ -29,4 +29,5 @@ class Transaction extends Model
     {
         return $this->belongsTo(User::class);
     }
+
 }

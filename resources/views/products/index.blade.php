@@ -11,77 +11,7 @@
         margin: auto;
     }
 
-    .content {
-        flex: 1;
-        padding: 20px;
-    }
 
-    .product-card {
-        margin-bottom: 20px;
-    }
-
-    /* Product List */
-    .product-list {
-        display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    flex-direction: row;
-    }
-
-    /* Style for Cart Icon */
-    #cart-icon {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        font-size: 30px;
-        cursor: pointer;
-        background-color: #007bff;
-        color: white;
-        border-radius: 50%;
-        padding: 15px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Hidden Cart Panel */
-    #cart {
-        display: none; /* Hidden by default */
-        position: fixed;
-        top: 70px;
-        right: 20px;
-        width: 300px;
-        border: 1px solid #ccc;
-        padding: 20px;
-        background: #fff;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    #cart h4 {
-        margin-bottom: 20px;
-    }
-
-    #cart-items {
-        list-style: none;
-        padding: 0;
-        margin-bottom: 20px;
-    }
-
-    #cart-items li {
-        margin-bottom: 10px;
-    }
-
-    #cart p {
-        font-weight: bold;
-    }
-
-    #cart .btn {
-        width: 100%;
-        margin-top: 10px;
-    }
-    * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
 
 body {
     font-family: Arial, sans-serif;
@@ -167,10 +97,52 @@ button {
     cursor: pointer;
 }
 
-button:hover {
-    background-color: #0056b3;
-}
 
+main {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 2rem;
+    }
+
+    .category-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .category-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .category-card a {
+        text-decoration: none;
+        color: #333;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .category-card a:hover {
+        color: #007BFF;
+    }
 /* Responsif */
 @media (max-width: 768px) {
     .container {
@@ -186,68 +158,24 @@ button:hover {
     .keranjang {
         border: none;
     }
+
 }
 </style>
 @endsection
-
 @section('content')
-
-<!-- Shopping Cart Icon -->
-<div class="container">
-    <div class="produk">
-        <h2>Daftar Produk</h2>
-        <div class="product-list">
-            @foreach ($products as $item)
-                <!-- Product Item -->
-                <div class="col-md-5">
-                    <div class="card product-card" style="width: 18rem;">
-                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Product">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $item->title }}</h5>
-                            <p class="card-text">@rupiah($item->price)</p>
-                            <a href="{{ route('cart.create', $item->id) }}">
-                                <button class="btn btn-primary">Add to Cart</button>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
+<main>
+    <h1>Daftar Kategori</h1>
+    <div class="category-list">
+        @foreach ($categories as $category)
+        <div class="category-card">
+            <a href="{{ route('products.category', $category->id) }}">
+                <h2>{{ $category->name }}</h2>
+            </a>
         </div>
-
+        @endforeach
     </div>
-    <div class="keranjang">
-        <h2>Keranjang Saya</h2>
-        <h4>Shopping Cart</h4>
-    <ul id="cart-items" class="list-group">
-        @foreach ($cart as $item)
-        <li class="list-group-item">
-            @if ($item->product)
-                {{ $item->product->title }} - @rupiah($item->product->price) x {{ $item->quantity }}
-            @else
-                <em>Produk tidak ditemukan</em>
-            @endif
-        </li>
-    @endforeach
-    </ul>
-    <p>Items: <span id="total-items">{{ count($cart) }}</span></p>
-    <p>Total: Rp.<span id="total-price">
-        @rupiah($cart->sum(function ($item) {
-            return $item->product ? $item->product->price * $item->quantity : 0;
-        }))
-    </span></p>
-        <a href="{{ route('cart.clear') }}">
-        <button class="btn btn-danger" id="clear-cart">Clear Cart</button>
-    </a>
-    <a href="{{ route('cart.index') }}">
-        <button class="btn btn-success" id="check-out">Checkout</button>
-    </a>
-    </div>
-</div>
-<!-- Shopping Cart Panel -->
-<div id="cart">
-
-</div>
-
+</main>
 @endsection
+
 
 

@@ -8,6 +8,14 @@ class Pekerja extends Model
 {
     protected $fillable = ['name', 'job_descs_id', 'user_id'];
     protected $table = 'pekerjas';
+    protected static function booted()
+    {
+        static::saving(function ($pekerja) {
+            if (!$pekerja->name) {
+                $pekerja->name = $pekerja->user->name ?? 'Tanpa Nama'; // Isi otomatis dari relasi user
+            }
+        });
+    }
 
     public function jobDesc()
     {

@@ -105,44 +105,56 @@ ul {
 }
 
     </style>
+
 @section('content')
 <div class="container">
-    <h2>Order #{{ $order->id }} - Product: {{ $order->product->title }}</h2> <!-- Show product title here -->
+    <h2>Order #{{ $order->id }}</h2>
+
+    <!-- Tampilkan judul berdasarkan tipe Order -->
+    @if ($order->product)
+        <h3>Product: {{ $order->product->title }}</h3>
+    @elseif ($order->customRequest)
+        <h3>Custom Request: {{ $order->customRequest->name }}</h3>
+    @endif
 
     <div class="list-group">
         @foreach($order->workerTasks as $task)
         <div class="list-group-item">
-            <h5>{{ $task->productWorkflow->step_name }}</h5>
+            <!-- Jika ini adalah workflow untuk produk -->
+            @if ($task->productWorkflow)
+                <h5>{{ $task->productWorkflow->step_name }}</h5>
+            @elseif ($task->customRequest)
+                <h5>{{ $task->task_description }}</h5> <!-- Custom Request Task -->
+            @endif
 
             <!-- Progress Bar -->
             <div class="progress">
-                <div class="progress-bar" role="progressbar" style="width: {{ getTaskProgressWidth($task->id) }}%" aria-valuenow="{{ getTaskProgressWidth($task->id) }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" role="progressbar"
+                     style="width: {{ getTaskProgressWidth($task->id) }}%"
+                     aria-valuenow="{{ getTaskProgressWidth($task->id) }}"
+                     aria-valuemin="0" aria-valuemax="100">
                     {{ ucfirst($task->progress) }}
                 </div>
             </div>
 
             <!-- Display Deadline -->
-            <p><strong>Deadline:</strong> {{ $task->deadline }}</p> <!-- Format tanggal -->
+            <p><strong>Deadline:</strong> {{ $task->deadline }}</p>
 
             <!-- Revisi Section -->
             @if ($task->progress === 'revision_requested')
-    <!-- Tombol Revisi -->
-    <form action="{{ route('revisions.store') }}" method="POST" class="d-inline">
-        @csrf
-        <input type="hidden" name="task_id" value="{{ $task->id }}">
-        <textarea name="description" class="form-control mb-2" required placeholder="Masukkan revisi..."></textarea>
-        <button type="submit" class="btn btn-warning">Kirim Revisi</button>
-    </form>
+                <form action="{{ route('revisions.store') }}" method="POST" class="d-inline">
+                    @csrf
+                    <input type="hidden" name="task_id" value="{{ $task->id }}">
+                    <textarea name="description" class="form-control mb-2" required placeholder="Masukkan revisi..."></textarea>
+                    <button type="submit" class="btn btn-warning">Kirim Revisi</button>
+                </form>
 
-    <!-- Tombol Lanjutkan -->
-    <form action="{{ route('worker-tasks.complete', $task->id) }}" method="POST" class="d-inline">
-        @csrf
-        @method('PUT')
-        <button type="submit" class="btn btn-success">Lanjutkan</button>
-    </form>
-@endif
-
-
+                <form action="{{ route('worker-tasks.complete', $task->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    @method('PUT')
+                    <button type="submit" class="btn btn-success">Lanjutkan</button>
+                </form>
+            @endif
 
             <!-- Download Report Button -->
             <div class="mt-3">

@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use App\Filament\Resources\ProductResource\RelationManagers\WorkflowRelationManager; // Pastikan ini mengimpor RelationManager yang benar
+use Filament\Forms\Components\RichEditor;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductResource extends Resource
@@ -27,8 +28,26 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('title')
                     ->required()
                     ->label('Product Name'),
-                Forms\Components\Textarea::make('description')
-                    ->label('Description'),
+                RichEditor::make('description')
+                    ->label('Deskripsi')
+                    ->toolbarButtons([
+                        'attachFiles',
+        'blockquote',
+        'bold',
+        'bulletList',
+        'codeBlock',
+        'h2',
+        'h3',
+        'italic',
+        'link',
+        'orderedList',
+        'redo',
+        'strike',
+        'underline',
+        'undo',
+                    ])
+                    ->placeholder('Tulis deskripsi produk di sini...')
+                    ->required(),
                 Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->required()

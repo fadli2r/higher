@@ -16,29 +16,44 @@ class CheckoutController extends Controller
     }
 
     public function applyCoupon(Request $request)
-    {
-        $coupon = Coupon::where('code', $request->coupon_code)->first();
+{
+    // Cari kupon berdasarkan kode
+    $coupon = Coupon::where('code', $request->coupon_code)->first();
 
-        if ($coupon && $coupon->expires_at > now() && $coupon->is_active) {
-            $discount = 0;
-            $cartTotal = Cart::where('user_id', auth()->id())->get()->sum(function ($item) {
-                return $item->product->price * $item->quantity;
-            });
-
-            if ($coupon->discount_type === 'fixed') {
-                $discount = $coupon->discount_value;
-            } elseif ($coupon->discount_type === 'percentage') {
-                $discount = ($coupon->discount_value / 100) * $cartTotal;
-            }
-
-            session(['coupon_code' => $request->coupon_code]);
-            session(['discount' => $discount]);
-
-            return redirect()->route('cart.index')->with('success', 'Coupon applied successfully!');
-        } else {
-            return redirect()->route('cart.index')->withErrors('Invalid or expired coupon code.');
-        }
+    if (!$coupon) {
+        // Kupon tidak ditemukan
+        return redirect()->route('cart.index')->withErrors('Coupon code does not exist.');
     }
+
+    if ($coupon->expires_at <= now()) {
+        // Kupon sudah kedaluwarsa
+        return redirect()->route('cart.index')->withErrors('This coupon has expired.');
+    }
+
+    if (!$coupon->is_active) {
+        // Kupon tidak aktif
+        return redirect()->route('cart.index')->withErrors('This coupon is not active.');
+    }
+
+    // Hitung diskon
+    $discount = 0;
+    $cartTotal = Cart::where('user_id', auth()->id())->get()->sum(function ($item) {
+        return $item->product->price * $item->quantity;
+    });
+
+    if ($coupon->discount_type === 'fixed') {
+        $discount = $coupon->discount_value;
+    } elseif ($coupon->discount_type === 'percentage') {
+        $discount = ($coupon->discount_value / 100) * $cartTotal;
+    }
+
+    // Simpan kupon dan diskon ke sesi
+    session(['coupon_code' => $request->coupon_code]);
+    session(['discount' => $discount]);
+
+    return redirect()->route('cart.index')->with('success', 'Coupon applied successfully!');
+}
+
 
     public function createOrder()
     {

@@ -21,11 +21,20 @@ class CustomDesignController extends Controller
 
     public function create(Request $request)
 {
+    if (!auth()->check()) {
+        return redirect()->route('login')->with('error', 'Silakan login untuk membuat custom design.');
+    }
     $validated = $request->validate([
         'name' => 'required|string|max:255',
         'description' => 'required|string',
         'size_id' => 'required|exists:custom_sizes,id',
         'custom_item_id' => 'required|exists:custom_items,id',
+        'custom_item_id' => 'required|exists:custom_items,id',
+    'whatsapp' => 'required|string|max:15',
+    'brand_name' => 'nullable|string|max:255',
+    'color_recommendation' => 'nullable|string|max:255',
+    'direction' => 'nullable|string',
+    'design_reference' => 'nullable|file|mimes:jpg,png,pdf,ai,eps,cdr|max:2048',
     ]);
 
     // Cari ukuran dan item kustom
@@ -35,6 +44,10 @@ class CustomDesignController extends Controller
     // Hitung total harga
     $price = $size->additional_price + $customItem->base_price;
 
+    if ($request->hasFile('design_reference')) {
+        $filePath = $request->file('design_reference')->store('design-references', 'public');
+        $validated['design_reference'] = $filePath;
+    }
     // Buat CustomRequest dengan harga yang dihitung
     $customRequest = CustomRequest::create([
         'user_id' => auth()->id(),
@@ -44,6 +57,11 @@ class CustomDesignController extends Controller
         'custom_item_id' => $validated['custom_item_id'],
         'price' => $price, // Update harga yang benar
         'status' => 'pending',
+'whatsapp' => $validated['whatsapp'],
+    'brand_name' => $validated['brand_name'],
+    'color_recommendation' => $validated['color_recommendation'],
+    'direction' => $validated['direction'],
+    'design_reference' => $validated['design_reference'] ?? null,
     ]);
 
     return redirect()->route('custom-design.index')->with('success', 'Custom Design Created Successfully!');
@@ -82,6 +100,11 @@ class CustomDesignController extends Controller
     $request->validate([
         'size_id' => 'required|exists:custom_sizes,id',
         'description' => 'required|string|max:500',
+        'whatsapp' => 'required|string|max:15',
+    'brand_name' => 'nullable|string|max:255',
+    'color_recommendation' => 'nullable|string|max:255',
+    'direction' => 'nullable|string',
+    'design_reference' => 'nullable|file|mimes:jpg,png,pdf,ai,eps,cdr|max:2048',
     ]);
     $price = $size->additional_price + $customItem->base_price;
 
@@ -91,6 +114,12 @@ class CustomDesignController extends Controller
         'description' => $request->description,
         'price' => $price,
         'status' => 'pending',
+        'whatsapp' => $request->whatsapp,
+
+        'brand_name' => $request->brand_name,
+        'color_recommendation' => $request->color_recommendation,
+        'design_reference' => $request->design_reference,
+
     ]);
 
     // Tambahkan item custom request

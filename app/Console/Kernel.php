@@ -22,24 +22,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
 {
-    $schedule->call(function () {
-        $subscriptions = Subscriptions::where('status', 'active')
-            ->where('end_date', '<=', now()->addDays(7)) // Langganan akan habis dalam 7 hari
-            ->get();
-
-        foreach ($subscriptions as $subscription) {
-            // Buat invoice baru untuk perpanjangan
-            $invoice = Invoice::create([
-                'user_id' => $subscription->user_id,
-                'subscription_id' => $subscription->id,
-                'total_price' => $subscription->product->subscription_price,
-                'status' => 'pending',
-            ]);
-
-            // Kirim notifikasi email
-            //Notification::send($subscription->user, new SubscriptionRenewalNotification($invoice));
-        }
-    })->daily(); // Jalankan setiap hari
+    // Jalankan setiap 5 menit
+    $schedule->job(new \App\Jobs\CheckInvoicesDueDate)->everyFiveMinutes();
 }
 
 public function createSubscription($userId, $productId, $interval)

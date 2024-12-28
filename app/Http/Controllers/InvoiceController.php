@@ -25,13 +25,16 @@ class InvoiceController extends Controller
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
     public function generatePdf($id)
-    {
-        $invoice = Invoice::with(['transaction.orders'])->findOrFail($id);
+{
+    $invoice = Invoice::with(['transaction.orders'])->findOrFail($id);
 
-        $pdf = Pdf::loadView('invoices.pdf', compact('invoice'));
+    $orders = $invoice->transaction->orders ?? []; // Pastikan orders diambil dari transaksi
 
-        return $pdf->download('Invoice-' . $invoice->invoice_number . '.pdf');
-    }
+    $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'orders'));
+
+    return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
+}
+
 
     /**
      * List semua invoice untuk user.

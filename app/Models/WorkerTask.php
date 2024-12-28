@@ -8,7 +8,7 @@ class WorkerTask extends Model
 {
     protected $fillable = [
         'worker_id', 'order_id', 'task_description', 'progress', 'deadline',
-        'task_count', 'product_workflow_id','file_path', 'created_at', 'updated_at'
+        'task_count', 'product_workflow_id','custom_request_id','file_path', 'created_at', 'updated_at'
     ];
     protected $dates = [ 'deadline' => 'datetime'];
     protected static function booted()
@@ -61,5 +61,9 @@ class WorkerTask extends Model
 public function revisions()
 {
     return $this->hasMany(Revision::class, 'task_id');
+}
+public function customRequest()
+{
+    return $this->belongsTo(CustomRequest::class, 'custom_request_id');
 }
 }

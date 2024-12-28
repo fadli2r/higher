@@ -7,6 +7,8 @@ use App\Filament\Resources\PekerjaResource\RelationManagers;
 use App\Models\Pekerja;
 use App\Models\JobDesc;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -26,16 +28,28 @@ class PekerjaResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->label('Name'),
+                Select::make('user_id')
+            ->label('Nama Pengguna')
+            ->options(fn () => \App\Models\User::whereHas('roles', function ($query) {
+                $query->where('name', 'panel_pekerja'); // Role yang diinginkan
+            })->pluck('name', 'id'))
+            ->searchable()
+            ->required()
+            ->placeholder('Pilih pengguna'),
+
+        TextInput::make('name')
+            ->label('Nama Pekerja')
+            ->disabled() // Nonaktifkan input agar otomatis
+            ->default(fn ($state) => $state && isset($state['user_id'])
+                ? optional(\App\Models\User::find($state['user_id']))->name
+                : null),
+
                 Forms\Components\Select::make('job_descs_id')
                     ->label('Job Description')
                     ->relationship('jobDesc', 'name') // Mengambil nama deskripsi pekerjaan dari relasi
                     ->options(\App\Models\JobDesc::pluck('name', 'id')->toArray()) // Mengambil opsi dari tabel job_descs
                     ->required()
                     ->searchable()
-                    ->default(fn ($record) => $record->job_descs_id) // Default sesuai dengan nilai yang ada di record
                     ->placeholder('Pilih Deskripsi Pekerjaan'),
             ]);
     }

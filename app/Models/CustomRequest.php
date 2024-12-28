@@ -17,7 +17,12 @@ class CustomRequest extends Model
         'size_id',
         'custom_item_id',
         'price',
-        'status'
+        'status',
+        'whatsapp',
+    'brand_name',
+    'color_recommendation',
+    'direction',
+    'design_reference',
     ];
 
     public function user()
@@ -44,7 +49,7 @@ class CustomRequest extends Model
         return $this->hasOne(Cart::class, 'custom_request_id');
     }
 // Relasi ke Order
-    public function orders()
+public function order()
     {
         return $this->hasMany(Order::class, 'custom_request_id');
     }

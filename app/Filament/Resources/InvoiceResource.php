@@ -88,10 +88,10 @@ class InvoiceResource extends Resource
                 ->label('Show Invoice')
                 ->url(fn (Invoice $record): string => route('invoices.show', $record))
                 ->openUrlInNewTab(),
-            Action::make('download')
-    ->label('Download Invoice')
-    ->url(fn (Invoice $record): string => route('invoices.download', $record))
-    ->openUrlInNewTab(),
+            //Action::make('download')
+   // ->label('Download Invoice')
+    //->url(fn (Invoice $record): string => route('invoices.download', $record))
+    //->openUrlInNewTab(),
 
         ])
         ->filters([

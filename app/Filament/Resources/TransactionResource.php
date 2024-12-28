@@ -42,42 +42,64 @@ class TransactionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-        ->columns([
-            TextColumn::make('id')->label('ID')->sortable(),
-            TextColumn::make('order_id')->label('ID Pesanan')->sortable(),
-            TextColumn::make('payment_status')
-                ->label('Status Pembayaran')
-                ->formatStateUsing(fn ($state) => match($state) {
-                    'pending' => 'Menunggu',
-                    'paid' => 'Dibayar',
-                    'failed' => 'Gagal',
-                    default => 'Tidak Diketahui',
-                })
-                ->sortable(),
-            TextColumn::make('invoice_number')->label('Nomor Invoice'),
-            TextColumn::make('created_at')
-                ->label('Tanggal Transaksi')
-                ->dateTime('d M Y H:i')
-                ->sortable(),
-        ])
-        ->filters([
-            SelectFilter::make('payment_status')
-                ->label('Status Pembayaran')
-                ->options([
-                    'pending' => 'Menunggu',
-                    'paid' => 'Dibayar',
-                    'failed' => 'Gagal',
-                ]),
-        ])
-        ->actions([
-            Tables\Actions\EditAction::make(),
+            ->columns([
 
-        ])
-        ->bulkActions([
-            Tables\Actions\DeleteBulkAction::make(),
-        ]);
+                Tables\Columns\TextColumn::make('id')
+                    ->label('Transaction ID')
+                    ->sortable(),
+                    Tables\Columns\TextColumn::make('user.name') // Relasi ke nama pengguna
+                    ->label('User Name')
+                    ->sortable(),
+                Tables\Columns\BadgeColumn::make('payment_status')
+                    ->label('Payment Status')
+                    ->colors([
+                        'primary' => 'pending',
+                        'success' => 'completed',
+                        'danger' => 'failed',
+                    ]),
+                Tables\Columns\TextColumn::make('total_price')
+                    ->label('Total Price')
+                    ->money('IDR'), // Format sebagai mata uang
+                Tables\Columns\BooleanColumn::make('is_subscription_payment')
+                    ->label('Subscription Payment'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Created At')
+                    ->dateTime(),
+            ])
+            ->actions([
+                Tables\Actions\Action::make('show_invoice')
+                    ->label('Show Invoice') // Label tombol
+                    ->icon('heroicon-o-document-text') // Ikon tombol
+                    ->url(fn ($record) => $record->invoice_url) // URL faktur
+                    ->openUrlInNewTab(), // Buka di tab baru
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('payment_status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'completed' => 'Completed',
+                        'failed' => 'Failed',
+                    ])
+                    ->label('Filter by Payment Status'),
+                Tables\Filters\Filter::make('is_subscription_payment')
+                    ->query(fn ($query) => $query->where('is_subscription_payment', true))
+                    ->label('Subscription Payments Only'),
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')
+                            ->label('From Date'),
+                        Forms\Components\DatePicker::make('to')
+                            ->label('To Date'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['from'], fn ($q) => $q->whereDate('created_at', '>=', $data['from']))
+                            ->when($data['to'], fn ($q) => $q->whereDate('created_at', '<=', $data['to']));
+                    })
+                    ->label('Filter by Date'),
+            ])
+            ->defaultSort('created_at', 'desc');
     }
-
     public static function getRelations(): array
     {
         return [];

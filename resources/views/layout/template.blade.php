@@ -16,6 +16,8 @@
         <nav class="menu">
             <ul>
                 <li><a href="/my-orders">My Orders</a></li>
+                <li><a href="/transactions">Transactions</a></li>
+
                 <li>
                     <a href="{{ route('custom-design.index') }}">Custom Desain</a>
                 </li>
@@ -23,10 +25,29 @@
                 @if(auth()->check() && auth()->user()->membership_status === 'member')
     <li><a href="{{ route('promos.index') }}">Promo</a></li>
 @endif
+<li><a href="/tickets">Bantuan</a></li>
+
             </ul>
         </nav>
         <div class="icons">
-            <a href="/admin/edit-profile" >Profile</a>
+
+
+            @if(auth()->check())
+            <a href="/admin/edit-profile"><button type="submit" class="btn btn-link" style="text-decoration: none; color: inherit;">
+                Profile
+            </button></a>
+            <form action="{{ route('filament.admin.auth.logout') }}" method="POST" style="display: inline;">
+                @csrf
+                <button type="submit" class="btn btn-link" style="text-decoration: none; color: inherit;">
+                    Logout
+                </button>
+            </form>
+        @else
+            <a href="{{ route('login') }}"><button type="submit" class="btn btn-link" style="text-decoration: none; color: inherit;">
+                Login
+            </button></a>
+        @endif
+
         </div>
     </header>
       <main>

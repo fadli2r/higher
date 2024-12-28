@@ -107,6 +107,10 @@ class User extends Authenticatable implements HasAvatar
     {
         return $this->hasOne(Pekerja::class);
     }
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
     protected function afterCreate(array $data, $user): void
 {
     \App\Models\Pekerja::create([
@@ -114,6 +118,10 @@ class User extends Authenticatable implements HasAvatar
         'user_id' => $user->id,
         'job_descs_id' => $data['pekerja']['job_descs_id'] ?? null, // Ambil job_desc_id dari input
     ]);
+}
+public function scopePekerja($query)
+{
+    return $query->where('role', 'panel_pekerja');
 }
 }
 

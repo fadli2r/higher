@@ -6,7 +6,6 @@ use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 use App\Models\Order;
-use Illuminate\Support\Facades\DB;
 
 class OrderChart extends ChartWidget
 {
@@ -15,16 +14,33 @@ class OrderChart extends ChartWidget
     protected static ?string $heading = 'Order Statistics';
     protected static ?string $pollingInterval = null; // Optional: Enable auto-refresh
 
-    public ?string $filter = 'today';
-    public function getData(): array
+    public ?string $filter = 'month'; // Default filter
+
+    protected function getData(): array
     {
+        // Ambil filter aktif
         $activeFilter = $this->filter;
 
+        // Tentukan periode waktu berdasarkan filter
+        $start = match ($activeFilter) {
+            'today' => now()->startOfDay(),
+            'week' => now()->subWeek()->startOfWeek(),
+            'month' => now()->startOfMonth(),
+            'year' => now()->startOfYear(),
+            default => now()->startOfMonth(), // Default ke awal bulan
+        };
+
+        $end = match ($activeFilter) {
+            'today' => now()->endOfDay(),
+            'week' => now()->endOfWeek(),
+            'month' => now()->endOfMonth(),
+            'year' => now()->endOfYear(),
+            default => now()->endOfMonth(), // Default ke akhir bulan
+        };
+
+        // Ambil data menggunakan Flowframe Trend
         $data = Trend::model(Order::class)
-            ->between(
-                start: now()->startOfMonth(),
-                end: now()->endOfMonth(),
-            )
+            ->between(start: $start, end: $end)
             ->perDay()
             ->count();
 
@@ -40,19 +56,21 @@ class OrderChart extends ChartWidget
             ],
             'labels' => $data->map(fn (TrendValue $value) => $value->date),
         ];
-
     }
+
     protected function getFilters(): ?array
     {
+        // Filter yang tersedia
         return [
             'today' => 'Today',
-            'week' => 'Last week',
-            'month' => 'Last month',
-            'year' => 'This year',
+            'week' => 'Last Week',
+            'month' => 'This Month',
+            'year' => 'This Year',
         ];
     }
+
     protected function getType(): string
     {
-        return 'line';
+        return 'line'; // Tipe chart
     }
 }

@@ -75,6 +75,7 @@ ul {
 }
     </style>
 @section('content')
+
 <div class="container mt-5">
     <h1 class="text-center">Shopping Cart</h1>
 
@@ -132,6 +133,22 @@ ul {
 
     <!-- Form Kupon -->
     <div class="mt-4">
+        @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+@if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
         <form action="{{ route('cart.applyCoupon') }}" method="POST">
             @csrf
             <div class="d-flex">
