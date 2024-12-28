@@ -10,7 +10,7 @@ class Worker extends Model
 
     public function tasks()
     {
-        return $this->hasMany(WorkerTask::class); // Relasi ke WorkerTask
+        return $this->hasMany(WorkerTask::class, 'worker_id');
     }
 
     public function categoryWorkers()

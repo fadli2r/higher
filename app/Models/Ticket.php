@@ -17,7 +17,7 @@ class Ticket extends Model
 
     public function messages()
     {
-        return $this->hasMany(TicketMessage::class);
+        return $this->hasMany(TicketMessage::class, 'ticket_id'); // Pastikan ticket_id digunakan sebagai foreign key
     }
 
     public function user()

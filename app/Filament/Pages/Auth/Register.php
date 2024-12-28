@@ -41,16 +41,25 @@ class Register extends BaseRegister
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
         ]);
+        $user->assignRole('panel_user'); // Pastikan role sudah ada
 
-        // Retrieve the role 'panel_user' from the roles table
-        $role = \Spatie\Permission\Models\Role::where('name', 'panel_user')->first();
 
-        // If the role exists, assign it to the user
-        if ($role) {
-            $user->assignRole($role);
-        }
+        // Retrieve or create the role 'panel_user'
+        $role = Role::firstOrCreate(
+            ['name' => 'panel_user'], // Check for the role
+            ['guard_name' => 'web']  // Create the role if it doesn't exist
+        );
+
+        // Assign the role to the user
+        $user->assignRole($role);
+
+        redirect('/products')->send();
 
         // Return the user after it's created and role is assigned
         return $user;
     }
+    protected function getRedirectUrl(): string
+{
+    return $this->previousUrl ?? $this->getResource()::getUrl('index');
+}
 }

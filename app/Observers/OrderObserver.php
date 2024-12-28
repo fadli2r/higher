@@ -35,6 +35,9 @@ class OrderObserver
             $this->handleProductWorkflow($order);
         }
     }
+    if ($order->isDirty('order_status') && $order->order_status === 'completed') {
+        $this->updateUserMembershipStatus($order->user);
+    }
 }
 
 private function handleCustomRequestWorkflow(Order $order): void
@@ -55,11 +58,10 @@ private function handleCustomRequestWorkflow(Order $order): void
         return;
     }
 
-    // Ambil ID langkah workflow yang sudah ada di worker_tasks
-    $existingWorkflowSteps = WorkerTask::where('order_id', $order->id)
-        ->where('custom_request_id', $customRequest->id)
-        ->pluck('workflow_step_id')
-        ->toArray();
+    if (!$order->worker_id) {
+        $order->worker_id = $worker->id;
+        $order->save();
+    }
 
     // Workflow Statis
     $workflows = [
@@ -68,11 +70,24 @@ private function handleCustomRequestWorkflow(Order $order): void
         ['id' => 3, 'step_name' => 'Hasil Akhir', 'step_duration' => 1],
     ];
 
-    // Filter workflow yang belum ada di worker_tasks
+    // Cek apakah sudah ada WorkerTask untuk langkah ini
+    $existingWorkflowSteps = WorkerTask::where('order_id', $order->id)
+        ->where('custom_request_id', $customRequest->id)
+        ->pluck('workflow_step_id')
+        ->toArray();
+
+    // Filter hanya workflow yang belum ada
     $filteredWorkflows = collect($workflows)
         ->whereNotIn('id', $existingWorkflowSteps);
 
-    $lastDeadline = now();
+    if ($filteredWorkflows->isEmpty()) {
+        logger('No new workflows to create for Order ID: ' . $order->id);
+        return;
+    }
+
+    $lastDeadline = WorkerTask::where('order_id', $order->id)
+        ->where('custom_request_id', $customRequest->id)
+        ->max('deadline') ?? now();
 
     foreach ($filteredWorkflows as $workflow) {
         logger('Creating task for Workflow Step: ' . $workflow['step_name']);
@@ -83,13 +98,14 @@ private function handleCustomRequestWorkflow(Order $order): void
             'order_id' => $order->id,
             'custom_request_id' => $customRequest->id,
             'task_description' => 'Tugas untuk Custom Request: ' . $customRequest->name . ' - Step: ' . $workflow['step_name'],
-            'workflow_step_id' => $workflow['id'], // Assign ID jika tersedia
+            'workflow_step_id' => $workflow['id'],
             'progress' => 'not_started',
             'deadline' => $lastDeadline,
             'task_count' => 1,
         ]);
     }
 }
+
 
 
 private function handleProductWorkflow(Order $order): void
@@ -115,7 +131,6 @@ private function handleProductWorkflow(Order $order): void
         $this->assignWorkflowsToWorker($order, $worker);
     }
 
-    $this->updateUserMembershipStatus($order->user);
 }
 private function assignWorkflowsToWorker(Order $order, $worker)
 {

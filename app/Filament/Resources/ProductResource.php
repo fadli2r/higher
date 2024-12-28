@@ -28,45 +28,57 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('title')
                     ->required()
                     ->label('Product Name'),
+                    Forms\Components\TextInput::make('price')
+                    ->numeric()
+                    ->required()
+                    ->label('Price')
+                    ->columnSpan(2)
+                    ,
                 RichEditor::make('description')
                     ->label('Deskripsi')
                     ->toolbarButtons([
                         'attachFiles',
-        'blockquote',
-        'bold',
-        'bulletList',
-        'codeBlock',
-        'h2',
-        'h3',
-        'italic',
-        'link',
-        'orderedList',
-        'redo',
-        'strike',
-        'underline',
-        'undo',
+                        'blockquote',
+                        'bold',
+                        'bulletList',
+                        'codeBlock',
+                        'h2',
+                        'h3',
+                        'italic',
+                        'link',
+                        'orderedList',
+                        'redo',
+                        'strike',
+                        'underline',
+                        'undo',
                     ])
                     ->placeholder('Tulis deskripsi produk di sini...')
-                    ->required(),
-                Forms\Components\TextInput::make('price')
-                    ->numeric()
                     ->required()
-                    ->label('Price'),
+                    ->columnSpan(3),
+
                 Forms\Components\FileUpload::make('file_path')
-                    ->label('File Path'),
+                    ->label('File Path')
+                    ->columnSpan(1)
+                    ,
                 Forms\Components\Select::make('category_id')
                     ->relationship('category', 'name')
                     ->required()
-                    ->label('Category'),
+                    ->label('Category')
+                    ->columnSpan(1)
+                    ,
                 Forms\Components\TextInput::make('estimated_days')
                     ->numeric()
                     ->disabled()  // Make it readonly, because it's calculated
-                    ->label('Estimated Days'),
+                    ->label('Estimated Days')
+                    ->columnSpan(1)
+                    ,
                 Forms\Components\Repeater::make('workflows')
                   // You can use Repeater for multiple workflow steps
-                    ->relationship('workflows')  // Makes sure the relation is there
+
+                  ->relationship('workflows')  // Makes sure the relation is there
                     ->schema([
                         Forms\Components\TextInput::make('step_name')
+
                             ->required()
                             ->label('Step Name')
                             ->columnSpan(1),
@@ -81,7 +93,7 @@ class ProductResource extends Resource
                             ->label('Duration (Days)')
                             ->columnSpan(1),
                     ])
-                    ->columns(3)
+                    ->columnSpan(3)
                     ->label('Product Workflows')
             ]);
 

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
+use App\Filament\Resources\TransactionResource\Widgets\TransactionOverview;
 use App\Models\Transaction;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -10,7 +11,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Actions\Action;
 
 class TransactionResource extends Resource
 {
@@ -43,13 +45,13 @@ class TransactionResource extends Resource
     {
         return $table
             ->columns([
-
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('Transaction ID')
                     ->sortable(),
-                    Tables\Columns\TextColumn::make('user.name') // Relasi ke nama pengguna
+                TextColumn::make('user.name')
                     ->label('User Name')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\BadgeColumn::make('payment_status')
                     ->label('Payment Status')
                     ->colors([
@@ -57,34 +59,34 @@ class TransactionResource extends Resource
                         'success' => 'completed',
                         'danger' => 'failed',
                     ]),
-                Tables\Columns\TextColumn::make('total_price')
+                TextColumn::make('total_price')
                     ->label('Total Price')
                     ->money('IDR'), // Format sebagai mata uang
                 Tables\Columns\BooleanColumn::make('is_subscription_payment')
                     ->label('Subscription Payment'),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime(),
             ])
             ->actions([
-                Tables\Actions\Action::make('show_invoice')
+                Action::make('show_invoice')
                     ->label('Show Invoice') // Label tombol
                     ->icon('heroicon-o-document-text') // Ikon tombol
                     ->url(fn ($record) => $record->invoice_url) // URL faktur
                     ->openUrlInNewTab(), // Buka di tab baru
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('payment_status')
+                SelectFilter::make('payment_status')
                     ->options([
                         'pending' => 'Pending',
                         'completed' => 'Completed',
                         'failed' => 'Failed',
                     ])
                     ->label('Filter by Payment Status'),
-                Tables\Filters\Filter::make('is_subscription_payment')
+                Filter::make('is_subscription_payment')
                     ->query(fn ($query) => $query->where('is_subscription_payment', true))
                     ->label('Subscription Payments Only'),
-                Tables\Filters\Filter::make('created_at')
+                Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('from')
                             ->label('From Date'),
@@ -100,6 +102,15 @@ class TransactionResource extends Resource
             ])
             ->defaultSort('created_at', 'desc');
     }
+
+    public static function getWidgets(): array
+{
+    return [
+        \App\Filament\Resources\TransactionResource\Widgets\TransactionOverview::class,
+    ];
+}
+
+
     public static function getRelations(): array
     {
         return [];

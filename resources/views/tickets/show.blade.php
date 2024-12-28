@@ -137,10 +137,10 @@ ul {
 
 @section('content')
 <div class="container mx-auto py-6">
-    <h1 class="text-2xl font-bold mb-6">Detail Tiket</h1>
+    <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Detail Tiket</h1>
 
-    <div class="bg-gray-100 p-4 rounded-md shadow-md">
-        <h2 class="text-xl font-semibold">{{ $ticket->title }}</h2>
+    <div class="bg-gray-100 p-6 rounded-md shadow-md">
+        <h2 class="text-2xl font-semibold">{{ $ticket->title }}</h2>
         <p class="text-sm text-gray-500">Status:
             <span class="font-bold @if ($ticket->status === 'open') text-green-600
             @elseif ($ticket->status === 'in-progress') text-yellow-500
@@ -156,14 +156,14 @@ ul {
 
         <div class="space-y-4">
             @foreach ($ticket->messages as $message)
-        <div class="message {{ $message->sender_type === 'user' ? 'user' : 'admin' }}">
-            <div class="timestamp">
-                [{{ $message->created_at->format('d M Y H:i') }}]
-                {{ $message->sender_type === 'user' ? $ticket->user->name : 'Admin' }}:
-            </div>
-            {{ $message->message }}
-        </div>
-    @endforeach
+                <div class="message {{ $message->sender_type === 'user' ? 'user' : 'admin' }} p-4 rounded-md shadow-sm bg-white">
+                    <div class="timestamp text-xs text-gray-400">
+                        [{{ $message->created_at->format('d M Y H:i') }}]
+                        {{ $message->sender_type === 'user' ? $ticket->user->name : 'Admin' }}:
+                    </div>
+                    <p class="mt-1">{{ $message->message }}</p>
+                </div>
+            @endforeach
         </div>
     </div>
 
@@ -176,7 +176,7 @@ ul {
             <textarea name="message" id="message" rows="4" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" required></textarea>
         </div>
 
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
             Kirim
         </button>
     </form>

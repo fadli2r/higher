@@ -18,16 +18,10 @@ class User extends Authenticatable implements HasAvatar
     protected static function booted(): void
     {
         // Event ketika model User sedang dibuat
-
-        // Event ketika model User sudah berhasil dibuat
         static::created(function (User $user) {
-            // Membuat entri baru di tabel Pekerja terkait dengan user yang baru
-            Pekerja::create([
-                'name' => $user->name,
-                'user_id' => $user->id,
-                'job_descs_id' => request()->input('pekerja.job_descs_id') ?? null,  // Menambahkan job_descs_id jika ada
-            ]);
+            $user->assignRole('panel_user');
         });
+
     }
 
     /**

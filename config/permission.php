@@ -28,6 +28,8 @@ return [
         'role' => Spatie\Permission\Models\Role::class,
 
     ],
+    'guards' => ['web'], // Guard yang digunakan harus ada di sini
+
 
     'table_names' => [
 

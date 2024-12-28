@@ -61,6 +61,89 @@ ul {
     color: #007BFF;
 }
 
+/* Reset default margin and padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body styling */
+body {
+    font-family: 'Arial', sans-serif;
+    color: #333; /* Warna teks */
+}
+
+/* Container styling */
+.container {
+    max-width: 800px; /* Maksimal lebar kontainer */
+    margin: 0 auto; /* Pusatkan kontainer */
+    padding: 20px; /* Padding di dalam kontainer */
+}
+
+/* Heading styling */
+h1 {
+    font-size: 2.5rem; /* Ukuran font judul */
+    color: #2c3e50; /* Warna judul */
+    margin-bottom: 20px; /* Jarak bawah judul */
+}
+
+/* Button styling */
+a {
+    display: inline-block; /* Agar tombol bisa diatur padding */
+    padding: 12px 24px; /* Padding di dalam tombol */
+    background-color: #007bff; /* Warna latar belakang tombol */
+    color: black; /* Warna teks tombol */
+    border-radius: 8px; /* Sudut melengkung */
+    text-decoration: none; /* Hilangkan garis bawah */
+    transition: background-color 0.3s, transform 0.2s; /* Transisi untuk hover */
+}
+
+/* Efek hover pada tombol */
+a:hover {
+    transform: scale(1.05); /* Efek zoom saat hover */
+}
+
+/* Tabel styling */
+table {
+    width: 100%; /* Lebar penuh */
+    border-collapse: collapse; /* Menghilangkan jarak antara border */
+    margin-top: 20px; /* Jarak atas tabel */
+}
+
+/* Header tabel styling */
+th {
+    background-color: #f1f5f9; /* Warna latar belakang header */
+    color: #4a4a4a; /* Warna teks header */
+    padding: 12px; /* Padding di dalam header */
+    text-align: left; /* Rata kiri untuk teks */
+    font-weight: bold; /* Tebal untuk header */
+}
+
+/* Cell styling */
+td {
+    border: 1px solid #d1d5db; /* Border abu-abu */
+    padding: 12px; /* Padding di dalam cell */
+}
+
+/* Status badge styling */
+span {
+    display: inline-block; /* Agar badge bisa diatur padding */
+    padding: 4px 8px; /* Padding di dalam badge */
+    border-radius: 12px; /* Sudut melengkung untuk badge */
+    color: white; /* Warna teks badge */
+}
+
+/* Hover effect for table rows */
+tr:hover {
+    background-color: #f9fafb; /* Warna latar belakang saat hover */
+    transition: background-color 0.2s; /* Transisi untuk hover */
+}
+
+/* Center text for specific cells */
+.text-center {
+    text-align: center; /* Rata tengah untuk teks */
+}
 /* Responsif */
 @media (max-width: 768px) {
     .header {
@@ -74,82 +157,88 @@ ul {
     }
 }
 
-/* progress BAR */
-.progress {
-  margin:20px auto;
-  padding:0;
-  width:90%;
-  height:30px;
-  overflow:hidden;
-  background:#e5e5e5;
-  border-radius:6px;
+.status-badge {
+    display: inline-block; /* Membuat badge menjadi inline-block */
+    padding: 6px 12px; /* Padding dalam badge */
+    font-size: 0.875rem; /* Ukuran font */
+    font-weight: bold; /* Teks lebih tebal */
+    border-radius: 12px; /* Sudut melengkung untuk badge */
+    text-align: center; /* Rata tengah teks */
+    text-transform: capitalize; /* Membuat teks dengan huruf pertama kapital */
+    color: white; /* Warna teks */
 }
 
-.bar {
-	position:relative;
-  float:left;
-  min-width:1%;
-  height:100%;
-  background:cornflowerblue;
+/* Warna badge berdasarkan status */
+.status-open {
+    background-color: #28a745; /* Hijau untuk status "open" */
 }
 
-.percent {
-	position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  margin:0;
-  font-family:tahoma,arial,helvetica;
-  font-size:12px;
-  color:white;
+.status-in-progress {
+    background-color: #ffc107; /* Kuning untuk status "in-progress" */
+    color: #333; /* Warna teks lebih gelap untuk kontras */
 }
 
+.status-closed {
+    background-color: #6c757d; /* Abu-abu untuk status "closed" */
+}
+
+/* Efek hover pada badge */
+.status-badge:hover {
+    opacity: 0.9; /* Sedikit redup saat hover */
+    transform: scale(1.05); /* Sedikit membesar saat hover */
+    transition: all 0.3s ease; /* Animasi halus */
+}
     </style>
 
 @section('content')
 <div class="container mx-auto py-6">
-    <h1 class="text-2xl font-bold mb-6">Daftar Tiket</h1>
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Daftar Tiket</h1>
 
-    <a href="{{ route('tickets.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-        Buat Tiket Baru
-    </a>
+    <div class="text-center mb-6">
+        <a href="{{ route('tickets.create') }}" class="inline-block px-6 py-3 bg-blue-600 text-black rounded-lg shadow hover:bg-blue-700 transition duration-200">
+            Buat Tiket Baru
+        </a>
+    </div>
 
     <div class="mt-6">
         @if ($tickets->isEmpty())
-            <p class="text-gray-500">Belum ada tiket yang dibuat.</p>
+            <p class="text-gray-500 text-center">Belum ada tiket yang dibuat.</p>
         @else
-            <table class="w-full border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="border border-gray-300 px-4 py-2 text-left">Judul</th>
-                        <th class="border border-gray-300 px-4 py-2">Status</th>
-                        <th class="border border-gray-300 px-4 py-2">Tanggal</th>
-                        <th class="border border-gray-300 px-4 py-2">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($tickets as $ticket)
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-2">{{ $ticket->title }}</td>
-                            <td class="border border-gray-300 px-4 py-2 text-center">
-                                <span class="px-2 py-1 rounded-full text-white
-                                    @if ($ticket->status === 'open') bg-green-600
-                                    @elseif ($ticket->status === 'in-progress') bg-yellow-500
-                                    @else bg-gray-500
-                                    @endif">
-                                    {{ ucfirst($ticket->status) }}
-                                </span>
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 text-center">{{ $ticket->created_at->format('d M Y') }}</td>
-                            <td class="border border-gray-300 px-4 py-2 text-center">
-                                <a href="{{ route('tickets.show', $ticket->id) }}" class="text-blue-600 hover:underline">
-                                    Lihat
-                                </a>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 shadow-md rounded-lg">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 px-4 py-2 text-left font-semibold">Judul</th>
+                            <th class="border border-gray-300 px-4 py-2 text-center font-semibold">Status</th>
+                            <th class="border border-gray-300 px-4 py-2 text-center font-semibold">Tanggal</th>
+                            <th class="border border-gray-300 px-4 py-2 text-center font-semibold">Aksi</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($tickets as $ticket)
+                            <tr class="hover:bg-gray-50 transition duration-200">
+                                <td class="border border-gray-300 px-4 py-2">{{ $ticket->title }}</td>
+                                <td class="border border-gray-300 px-4 py-2 text-center">
+                                    <span class="status-badge
+                                        @if ($ticket->status === 'open') status-open
+                                        @elseif ($ticket->status === 'in-progress') status-in-progress
+                                        @else status-closed
+                                        @endif">
+                                        {{ ucfirst($ticket->status) }}
+                                    </span>
+                                </td>
+
+                                <td class="border border-gray-300 px-4 py-2 text-center">{{ $ticket->created_at->format('d M Y') }}</td>
+                                <td class="border border-gray-300 px-4 py-2 text-center">
+                                    <a href="{{ route('tickets.show', $ticket->id) }}" class="text-blue-600 hover:underline">
+                                        Lihat
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
     </div>
 </div>

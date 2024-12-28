@@ -43,6 +43,7 @@ Route::get('/order-custom-design', CreateCustomRequest::class)->name('order.cust
 // my orders
 Route::get('/my-orders', [MyOrders::class, 'index'])->name('myorders.index');
 Route::get('/order/{orderId}/progress', [MyOrders::class, 'showProgress'])->name('myorders.progress');
+Route::post('/orders/{order}/reorder', [MyOrders::class, 'reorder'])->name('orders.reorder');
 
 Route::resource('revisions', RevisionController::class)->only('store');
 Route::put('worker-tasks/{id}/complete', [WorkerTaskController::class, 'complete'])->name('worker-tasks.complete');

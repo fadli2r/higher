@@ -74,56 +74,98 @@ ul {
     }
 }
 
-/* progress BAR */
-.progress {
-  margin:20px auto;
-  padding:0;
-  width:90%;
-  height:30px;
-  overflow:hidden;
-  background:#e5e5e5;
-  border-radius:6px;
+/* Reset default margin and padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.bar {
-	position:relative;
-  float:left;
-  min-width:1%;
-  height:100%;
-  background:cornflowerblue;
+
+
+/* Container styling */
+.container {
+    max-width: 800px; /* Maksimal lebar kontainer */
+    margin: 0 auto; /* Pusatkan kontainer */
+    padding: 20px; /* Padding di dalam kontainer */
 }
 
-.percent {
-	position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  margin:0;
-  font-family:tahoma,arial,helvetica;
-  font-size:12px;
-  color:white;
+/* Heading styling */
+h1 {
+    font-size: 2.5rem; /* Ukuran font judul */
+    color: #2c3e50; /* Warna judul */
+    margin-bottom: 20px; /* Jarak bawah judul */
+}
+
+/* Form styling */
+form {
+    background-color: #ffffff; /* Latar belakang formulir */
+    border-radius: 8px; /* Sudut melengkung */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Bayangan */
+    padding: 30px; /* Padding di dalam formulir */
+}
+
+/* Label styling */
+label {
+    font-weight: bold; /* Tebal untuk label */
+    color: #4a4a4a; /* Warna label */
+}
+
+/* Input dan textarea styling */
+input[type="text"],
+textarea {
+    width: 100%; /* Lebar penuh */
+    padding: 10px; /* Padding di dalam input */
+    border: 1px solid #d1d5db; /* Border abu-abu */
+    border-radius: 4px; /* Sudut melengkung */
+    transition: border-color 0.3s; /* Transisi border */
+}
+
+/* Fokus pada input dan textarea */
+input[type="text"]:focus,
+textarea:focus {
+    border-color: #007bff; /* Warna border saat fokus */
+    outline: none; /* Hilangkan outline default */
+}
+
+/* Tombol styling */
+button {
+    width: 100%; /* Lebar penuh */
+    padding: 12px; /* Padding di dalam tombol */
+    background-color: #007bff; /* Warna latar belakang tombol */
+    color: white; /* Warna teks tombol */
+    border: none; /* Hilangkan border default */
+    border-radius: 4px; /* Sudut melengkung */
+    cursor: pointer; /* Kursor pointer saat hover */
+    transition: background-color 0.3s, transform 0.2s; /* Transisi untuk hover */
+}
+
+/* Efek hover pada tombol */
+button:hover {
+    background-color: #0056b3; /* Warna latar belakang saat hover */
+    transform: scale(1.05); /* Efek zoom saat hover */
 }
 
     </style>
 
 @section('content')
 <div class="container mx-auto py-6">
-    <h1 class="text-2xl font-bold mb-6">Buat Tiket Baru</h1>
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Buat Tiket Baru</h1>
 
-    <form action="{{ route('tickets.store') }}" method="POST" class="space-y-6">
+    <form action="{{ route('tickets.store') }}" method="POST" class="max-w-lg mx-auto bg-white shadow-lg rounded-lg p-6 space-y-6">
         @csrf
 
         <div>
             <label for="title" class="block font-medium text-gray-700">Judul</label>
-            <input type="text" name="title" id="title" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+            <input type="text" name="title" id="title" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2" required>
         </div>
 
         <div>
             <label for="message" class="block font-medium text-gray-700">Pesan Pertama (Opsional)</label>
-            <textarea name="message" id="message" rows="4" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Masukkan pesan pertama Anda"></textarea>
+            <textarea name="message" id="message" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2" placeholder="Masukkan pesan pertama Anda"></textarea>
         </div>
 
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 ease-in-out transform hover:scale-105">
             Buat Tiket
         </button>
     </form>
