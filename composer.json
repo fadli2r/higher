@@ -13,6 +13,7 @@
         "joaopaulolndev/filament-edit-profile": "^1.0",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
+        "visualbuilder/email-templates": "^3.0",
         "xendit/xendit-php": "^2.4",
         "yoeunes/toastr": "^3.1"
     },

@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Transaction;
-
+use App\Mail\Visualbuilder\EmailTemplates\PembayranBerhasil;
+use Illuminate\Support\Facades\Mail;
 
 class WebhookController extends Controller
 {
@@ -39,6 +40,8 @@ class WebhookController extends Controller
 
             // Jika pembayaran gagal, Anda dapat mengambil tindakan tambahan di sini
         }
+
+        Mail::to('a.n.caturpamungkas@gmail.com')->send(new PembayranBerhasil($transaction));
 
         return response()->json(['status' => 'success'], 200);
     }

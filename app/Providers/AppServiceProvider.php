@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \URL::forceScheme('https');
+        // \URL::forceScheme('https');
 
         \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::except([
             'webhook'

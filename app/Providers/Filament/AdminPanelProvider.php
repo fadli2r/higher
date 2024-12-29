@@ -25,7 +25,7 @@ use App\Filament\Pages\Settings;
 use Filament\Navigation\MenuItem;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
-
+use Visualbuilder\EmailTemplates\EmailTemplatesPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -70,6 +70,7 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
+                EmailTemplatesPlugin::make(),
                 FilamentShieldPlugin::make(),
                 FilamentEditProfilePlugin::make()
                 ->slug('edit-profile')
