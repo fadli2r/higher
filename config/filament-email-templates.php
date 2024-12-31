@@ -100,15 +100,15 @@ return [
 
     //Contact details included in default email templates
     'customer-services' => [
-        'email' => 'support@yourcompany.com',
+        'email' => 'admin@member.originfamous.biz.id',
         'phone' => '+441273 455702'
     ],
 
     //Footer Links
     'links' => [
-        ['name' => 'Website', 'url' => 'https://yourwebsite.com', 'title' => 'Goto website'],
+        ['name' => 'Website', 'url' => 'https://member.originfamous.biz.id', 'title' => 'Goto website'],
         [
-            'name' => 'Privacy Policy', 'url' => 'https://yourwebsite.com/privacy-policy',
+            'name' => 'Privacy Policy', 'url' => 'https://member.originfamous.biz.id/privacy-policy',
             'title' => 'View Privacy Policy'
         ],
     ],
@@ -149,9 +149,9 @@ return [
     //Most built-in emails can be automatically sent with minimal setup,
     //except "request password reset" requires a function in the User's model.  See readme.md for details
     'send_emails' => [
-        'new_user_registered' => false,
-        'verification' => false,
-        'user_verified' => false,
+        'new_user_registered' => true,
+        'verification' => true,
+        'user_verified' => true,
         'login' => false,
         'password_reset_success' => false,
         'locked_out' => false,

@@ -53,7 +53,7 @@ class Register extends BaseRegister
         // Assign the role to the user
         $user->assignRole($role);
 
-        redirect('/products')->send();
+        // redirect('/products')->send();
 
         // Return the user after it's created and role is assigned
         return $user;

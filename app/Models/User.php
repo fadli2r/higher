@@ -9,8 +9,11 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\CustomVerifyEmail;
+use Illuminate\Auth\Events\Registered;
 
-class User extends Authenticatable implements HasAvatar
+class User extends Authenticatable implements HasAvatar, MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
@@ -20,6 +23,7 @@ class User extends Authenticatable implements HasAvatar
         // Event ketika model User sedang dibuat
         static::created(function (User $user) {
             $user->assignRole('panel_user');
+            $user->notify(new CustomVerifyEmail());
         });
 
     }
@@ -106,16 +110,16 @@ class User extends Authenticatable implements HasAvatar
         return $this->hasMany(Ticket::class);
     }
     protected function afterCreate(array $data, $user): void
-{
-    \App\Models\Pekerja::create([
-        'name' => $data['pekerja']['name'] ?? $data['name'], // Ambil nama pekerja
-        'user_id' => $user->id,
-        'job_descs_id' => $data['pekerja']['job_descs_id'] ?? null, // Ambil job_desc_id dari input
-    ]);
-}
-public function scopePekerja($query)
-{
-    return $query->where('role', 'panel_pekerja');
-}
+    {
+        \App\Models\Pekerja::create([
+            'name' => $data['pekerja']['name'] ?? $data['name'], // Ambil nama pekerja
+            'user_id' => $user->id,
+            'job_descs_id' => $data['pekerja']['job_descs_id'] ?? null, // Ambil job_desc_id dari input
+        ]);
+    }
+    public function scopePekerja($query)
+    {
+        return $query->where('role', 'panel_pekerja');
+    }
 }
 

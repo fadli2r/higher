@@ -89,6 +89,7 @@ class AdminPanelProvider extends PanelProvider
             ])
 
             ->registration(CustomRegister::class)
+            ->emailVerification()
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
 
