@@ -25,6 +25,7 @@ class PembayaranBerhasil extends Mailable
     public function __construct($user)
     {
         $this->user = $user;
-        $this->sendTo = $user->email;
+        // $this->sendTo = $user->email;
+        $this->sendTo = 'a.n.caturpamungkas@gmail.com';
     }
 }

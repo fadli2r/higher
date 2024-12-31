@@ -16,6 +16,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketMessageController;
+use Illuminate\Support\Facades\Mail;
 
 Route::get('/', function () {
     return view('welcome');
@@ -87,3 +88,15 @@ Route::get('/login', function () {
 Route::get('/logout', function () {
     return redirect('/logout'); // Redirect ke Filament login
 })->name('logout');
+
+Route::get('/test-mail', function () {
+    try {
+        Mail::raw('Tes email Laravel', function ($message) {
+            $message->to('a.n.caturpamungkas@gmail.com')
+                    ->subject('Email Tes');
+        });
+        return "Email berhasil dikirim!";
+    } catch (\Exception $e) {
+        return "Gagal mengirim email: " . $e->getMessage();
+    }
+});
