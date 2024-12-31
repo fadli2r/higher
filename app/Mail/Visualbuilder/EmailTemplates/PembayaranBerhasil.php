@@ -14,17 +14,23 @@ class PembayaranBerhasil extends Mailable
     use BuildGenericEmail;
 
     public $template = 'pembayaran-berhasil';
-    public $user;
     public $sendTo;
+    public $transaction;
+    public $detail;
+    public $user;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($user)
+    public function __construct($transaction)
     {
-        $this->user = $user;
-        $this->sendTo = $user->user->email;
+        
+        $this->transaction = $transaction;
+        $this->user = $transaction->user;
+        $this->sendTo = $transaction->user->email;
+        
+        // dd($transaction->toArray());
     }
 }

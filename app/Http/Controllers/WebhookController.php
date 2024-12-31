@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Mail\Visualbuilder\EmailTemplates\PembayaranBerhasil;
 use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 
 class WebhookController extends Controller
 {
@@ -15,7 +16,9 @@ class WebhookController extends Controller
         $data = $request->all();
 
         // Temukan transaksi berdasarkan invoice_id dari payload
-        $transaction = Transaction::where('invoice_id', $data['id'])->with('orders', 'user')->first();
+        $transaction = Transaction::where('invoice_id', $data['id'])->with('orders.product', 'user')->first();
+
+        $temp_transaction = $transaction;
 
         if (!$transaction) {
             return response()->json(['status' => 'failed', 'message' => 'Transaction not found'], 404);
@@ -41,8 +44,19 @@ class WebhookController extends Controller
             // Jika pembayaran gagal, Anda dapat mengambil tindakan tambahan di sini
         }
 
-        try {
-            Mail::to($transaction->user->email)->send(new PembayaranBerhasil($transaction));
+        try {            
+            $temp_transaction->external_id = $data['external_id'];
+            $temp_transaction->paid_at = Carbon::create($data['paid_at'])->isoFormat('LLL');
+            $temp_transaction->payment_method = $data['payment_method'];
+            $temp_transaction->paid_amount = 'Rp ' . number_format($data['paid_amount'], 2, ',', '.');;
+
+            $order = array_map(function($item) {
+                return $item['product']['title'];
+            }, $temp_transaction->orders->toArray());
+
+            $temp_transaction['detail_order'] = implode(', ', $order);;
+
+            Mail::to($temp_transaction->user->email)->send(new PembayaranBerhasil($temp_transaction));
         } catch (\Throwable $th) {
             throw $th;
         }
