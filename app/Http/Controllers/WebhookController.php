@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Transaction;
-use App\Mail\Visualbuilder\EmailTemplates\PembayaranBerhasil;
+use App\Mail\Visualbuilder\EmailTemplates\{PembayaranBerhasil, WorkerNewOrder};
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
@@ -16,9 +16,17 @@ class WebhookController extends Controller
         $data = $request->all();
 
         // Temukan transaksi berdasarkan invoice_id dari payload
-        $transaction = Transaction::where('invoice_id', $data['id'])->with('orders.product', 'user')->first();
+        $transaction = Transaction::where('invoice_id', $data['id'])->with('orders.product', 'orders.worker.user', 'user')->first();
 
         $temp_transaction = $transaction;
+
+        // return response()->json($temp_transaction);
+
+        foreach ($temp_transaction->orders as $order) {
+            $order->created_at = Carbon::create($order->created_at)->isoFormat('LLL');
+            // return new WorkerNewOrder($order);
+            Mail::to($order->worker->user->email)->send(new WorkerNewOrder($order));
+        }
 
         if (!$transaction) {
             return response()->json(['status' => 'failed', 'message' => 'Transaction not found'], 404);
