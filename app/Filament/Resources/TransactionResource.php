@@ -62,8 +62,7 @@ class TransactionResource extends Resource
                 TextColumn::make('total_price')
                     ->label('Total Price')
                     ->money('IDR'), // Format sebagai mata uang
-                Tables\Columns\BooleanColumn::make('is_subscription_payment')
-                    ->label('Subscription Payment'),
+
                 TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime(),
@@ -83,9 +82,6 @@ class TransactionResource extends Resource
                         'failed' => 'Failed',
                     ])
                     ->label('Filter by Payment Status'),
-                Filter::make('is_subscription_payment')
-                    ->query(fn ($query) => $query->where('is_subscription_payment', true))
-                    ->label('Subscription Payments Only'),
                 Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('from')

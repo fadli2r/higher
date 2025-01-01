@@ -9,14 +9,24 @@ use Illuminate\Http\Request;
 
 class MyOrders extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil pesanan yang dimiliki oleh user yang sedang login
-        $orders = Order::where('user_id', auth()->id())->with('workerTasks.productWorkflow')->get();
+        // Query pesanan milik user yang sedang login
+        $query = Order::where('user_id', auth()->id())
+            ->with('workerTasks.productWorkflow');
+
+        // Tambahkan filter berdasarkan status jika parameter `status` diberikan
+        if ($request->has('status') && in_array($request->status, ['pending', 'in_progress', 'completed', 'cancelled'])) {
+            $query->where('order_status', $request->status);
+        }
+
+        // Ambil data pesanan dengan filter yang diterapkan
+        $orders = $query->get();
 
         // Kirim data pesanan ke view
         return view('myorders.index', compact('orders'));
     }
+
 
     public function showProgress($orderId)
     {

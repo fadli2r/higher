@@ -9,9 +9,9 @@ use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
 {
-    // Ambil invoice yang overdue dan milik user yang sedang login
+    // Proses overdue invoices
     $overdueInvoices = Invoice::whereHas('transaction', function ($query) {
         $query->where('user_id', auth()->id());
     })
@@ -33,13 +33,19 @@ class TransactionController extends Controller
         }
     }
 
-    // Ambil transaksi milik user yang sedang login
-    $transactions = Transaction::with('invoice')
-        ->where('user_id', auth()->id())
-        ->get();
+    // Ambil transaksi berdasarkan status
+    $query = Transaction::where('user_id', auth()->id())->with('invoice');
+
+    // Tambahkan filter status
+    if ($request->has('status') && in_array($request->status, ['paid', 'pending', 'failed'])) {
+        $query->where('payment_status', $request->status);
+    }
+
+    $transactions = $query->latest()->get();
 
     return view('transactions.index', compact('transactions'));
 }
+
 
     public function pay(Transaction $transaction)
     {

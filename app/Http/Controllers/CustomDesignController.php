@@ -92,47 +92,55 @@ class CustomDesignController extends Controller
     session()->flash('success', 'Desain kustom berhasil ditambahkan ke keranjang.');
     return redirect()->route('customDesign.index');
 }
-    public function store(Request $request)
+public function store(Request $request)
 {
     $size = CustomSize::find($request->size_id);
     $customItem = CustomItem::find($request->custom_item_id);
 
-    $request->validate([
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
         'size_id' => 'required|exists:custom_sizes,id',
         'description' => 'required|string|max:500',
         'whatsapp' => 'required|string|max:15',
-    'brand_name' => 'nullable|string|max:255',
-    'color_recommendation' => 'nullable|string|max:255',
-    'direction' => 'nullable|string',
-    'design_reference' => 'nullable|file|mimes:jpg,png,pdf,ai,eps,cdr|max:2048',
+        'brand_name' => 'nullable|string|max:255',
+        'color_recommendation' => 'nullable|string|max:255',
+        'direction' => 'nullable|string',
+        'design_reference' => 'nullable|file|mimes:jpg,png,pdf,ai,eps,cdr|max:2048',
     ]);
+
+    // Simpan file jika ada
+    if ($request->hasFile('design_reference')) {
+        $filePath = $request->file('design_reference')->store('design-references', 'public');
+        $validated['design_reference'] = $filePath;
+    }
+
+    // Hitung harga total
     $price = $size->additional_price + $customItem->base_price;
 
-    // Buat permintaan custom baru
+    // Buat Custom Request
     $customRequest = CustomRequest::create([
         'user_id' => auth()->id(),
-        'description' => $request->description,
+        'name' => $validated['name'],
+        'description' => $validated['description'],
         'price' => $price,
         'status' => 'pending',
-        'whatsapp' => $request->whatsapp,
-
-        'brand_name' => $request->brand_name,
-        'color_recommendation' => $request->color_recommendation,
-        'design_reference' => $request->design_reference,
-
+        'whatsapp' => $validated['whatsapp'],
+        'direction' => $validated['direction'],
+        'brand_name' => $validated['brand_name'],
+        'color_recommendation' => $validated['color_recommendation'],
+        'design_reference' => $validated['design_reference'] ?? null,
     ]);
 
     // Tambahkan item custom request
     $customRequestItem = CustomRequestItem::create([
         'custom_request_id' => $customRequest->id,
         'custom_size_id' => $request->size_id,
-        'custom_item_id' => $request->custom_item_id,  // Pastikan ini ada
-        'quantity' => 1, // Default
+        'custom_item_id' => $request->custom_item_id,
+        'quantity' => 1,
     ]);
 
-    // Hitung total harga (berdasarkan harga tambahan ukuran)
-    $customSize = CustomSize::find($request->size_id);
-    $totalPrice = $customSize->additional_price;
+    // Hitung total harga
+    $totalPrice = $size->additional_price;
 
     // Tambahkan ke keranjang
     Cart::create([
@@ -145,5 +153,6 @@ class CustomDesignController extends Controller
     flash()->success('Custom request berhasil ditambahkan ke keranjang.');
     return redirect()->route('cart.index');
 }
+
 
 }

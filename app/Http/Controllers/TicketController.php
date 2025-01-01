@@ -10,8 +10,18 @@ class TicketController extends Controller
 {
     public function index()
     {
-        $tickets = auth()->user()->tickets;
-        return view('tickets.index', compact('tickets'));
+        if (auth()->check()) {
+            $tickets = auth()->user()->tickets;
+
+            if ($tickets->isNotEmpty()) {
+                return view('tickets.index', compact('tickets'));
+            }
+
+            return view('tickets.auth');
+        }
+
+        // Jika pengguna belum login, tampilkan informasi
+        return view('tickets.auth');
     }
 
     public function create()

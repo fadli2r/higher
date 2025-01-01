@@ -39,40 +39,34 @@ class CustomRequestResource extends Resource
         return $form
         ->schema([
             // Field untuk memilih desain
-            Select::make('custom_item_id')
-                ->label('Choose a Design')
-                ->options(CustomItem::all()->pluck('name', 'id'))
-                ->searchable()
-                ->reactive()
-                ->afterStateUpdated(function ($state, $set, $get) {
-                    // Ambil harga dasar desain yang dipilih
-                    $customItem = CustomItem::find($state);
-
-                    // Set harga berdasarkan desain yang dipilih
-                    $set('price', $customItem->base_price);
-                }),
-
-            // Field untuk memilih ukuran
-            Select::make('custom_size_id')
-                ->label('Choose a Size')
-                ->options(CustomSize::all()->pluck('size_name', 'id'))
-                ->searchable()
-                ->reactive()
-                ->afterStateUpdated(function ($state, $set, $get) {
-                    // Ambil harga ukuran yang dipilih
-                    $customSize = CustomSize::find($state);
-
-                    // Ambil harga desain yang sudah dihitung sebelumnya
-                    $price = $get('price');  // Mengambil nilai harga yang ada sebelumnya
-
-                    // Tambahkan harga ukuran ke harga desain
-                    $set('price', $price + $customSize->additional_price);  // Menetapkan harga baru
-                }),
-
-            // Field untuk menampilkan harga
-            TextInput::make('price')
-                ->label('Total Price')
-                ->disabled(),  // Menonaktifkan field agar hanya bisa ditampilkan
+            Forms\Components\TextInput::make('user_id')
+                ->label('User ID')
+                ->disabled()
+                ->required(),
+            Forms\Components\TextInput::make('whatsapp')
+                ->label('WhatsApp')
+                ->required(),
+            Forms\Components\TextInput::make('brand_name')
+                ->label('Brand Name')
+                ->required(),
+            Forms\Components\TextInput::make('name')
+                ->label('Custom Request Name')
+                ->required(),
+            Forms\Components\Textarea::make('description')
+                ->label('Description')
+                ->rows(3)
+                ->required(),
+            Forms\Components\TextInput::make('color_recommendation')
+                ->label('Color Recommendation'),
+            Forms\Components\Textarea::make('direction')
+                ->label('Direction')
+                ->rows(3),
+            Forms\Components\FileUpload::make('design_reference')
+                ->label('Design Reference')
+                ->directory('design-references/')
+                ->disk('public')
+                ->disableLabel(false)
+                ->hint('Upload design reference files (e.g., PDF, PNG, etc.)'),
         ]);
     }
 

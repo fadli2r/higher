@@ -1,78 +1,6 @@
-@extends('layout.template')
-@section('styles')
+@extends('layout.layout')
 <style>
-    * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
 
-body {
-    font-family: Arial, sans-serif;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: white;
-    border-bottom: 1px solid #ddd;
-}
-ul {
-    list-style: none;
-    margin-bottom: 20px;
-    padding-top: 20px;
-}
-
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.menu ul {
-    list-style: none;
-    display: flex;
-    gap: 20px;
-}
-
-.menu a {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-}
-
-.menu a:hover {
-    color: #007BFF;
-}
-
-.icons {
-    display: flex;
-    gap: 15px;
-}
-
-.icon {
-    text-decoration: none;
-    font-size: 20px;
-    color: #333;
-}
-
-.icon:hover {
-    color: #007BFF;
-}
-
-/* Responsif */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .menu ul {
-        flex-direction: column;
-        gap: 10px;
-    }
-}
 
 /* progress BAR */
 .progress {
@@ -106,8 +34,27 @@ ul {
 
     </style>
 @section('content')
+<div class="cs-height_95 cs-height_lg_70"></div>
+
 <div class="container mt-5">
     <h2 class="mb-4 text-center">My Orders</h2>
+    <!-- Filter Form -->
+    <form action="{{ route('myorders.index') }}" method="GET" class="mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">Semua Status</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
+                    <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>Sedang Dikerjakan</option>
+                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
+                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </div>
+    </form>
     <div class="list-group">
         @foreach($orders as $order)
         <div class="list-group-item">
@@ -152,6 +99,8 @@ ul {
         @endforeach
     </div>
 </div>
+<div class="cs-height_95 cs-height_lg_70"></div>
+
 @endsection
 
 @php

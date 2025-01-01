@@ -1,85 +1,5 @@
-@extends('layout.template')
-@section('styles')
+@extends('layout.layout')
 <style>
-    * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: Arial, sans-serif;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: white;
-    border-bottom: 1px solid #ddd;
-}
-ul {
-    list-style: none;
-    margin-bottom: 20px;
-    padding-top: 20px;
-}
-
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.menu ul {
-    list-style: none;
-    display: flex;
-    gap: 20px;
-}
-
-.menu a {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-}
-
-.menu a:hover {
-    color: #007BFF;
-}
-
-.icons {
-    display: flex;
-    gap: 15px;
-}
-
-.icon {
-    text-decoration: none;
-    font-size: 20px;
-    color: #333;
-}
-
-.icon:hover {
-    color: #007BFF;
-}
-
-/* Responsif */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .menu ul {
-        flex-direction: column;
-        gap: 10px;
-    }
-}
-
-/* Reset default margin and padding */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
 
 
@@ -149,7 +69,10 @@ button:hover {
     </style>
 
 @section('content')
+
 <div class="container mx-auto py-6">
+    <div class="cs-height_95 cs-height_lg_70"></div>
+
     <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Buat Tiket Baru</h1>
 
     <form action="{{ route('tickets.store') }}" method="POST" class="max-w-lg mx-auto bg-white shadow-lg rounded-lg p-6 space-y-6">

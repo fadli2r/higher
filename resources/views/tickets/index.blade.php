@@ -1,78 +1,5 @@
-@extends('layout.template')
-@section('styles')
+@extends('layout.layout')
 <style>
-    * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: Arial, sans-serif;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: white;
-    border-bottom: 1px solid #ddd;
-}
-ul {
-    list-style: none;
-    margin-bottom: 20px;
-    padding-top: 20px;
-}
-
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.menu ul {
-    list-style: none;
-    display: flex;
-    gap: 20px;
-}
-
-.menu a {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-}
-
-.menu a:hover {
-    color: #007BFF;
-}
-
-.icons {
-    display: flex;
-    gap: 15px;
-}
-
-.icon {
-    text-decoration: none;
-    font-size: 20px;
-    color: #333;
-}
-
-.icon:hover {
-    color: #007BFF;
-}
-
-/* Reset default margin and padding */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Body styling */
-body {
-    font-family: 'Arial', sans-serif;
-    color: #333; /* Warna teks */
-}
 
 /* Container styling */
 .container {
@@ -88,21 +15,7 @@ h1 {
     margin-bottom: 20px; /* Jarak bawah judul */
 }
 
-/* Button styling */
-a {
-    display: inline-block; /* Agar tombol bisa diatur padding */
-    padding: 12px 24px; /* Padding di dalam tombol */
-    background-color: #007bff; /* Warna latar belakang tombol */
-    color: black; /* Warna teks tombol */
-    border-radius: 8px; /* Sudut melengkung */
-    text-decoration: none; /* Hilangkan garis bawah */
-    transition: background-color 0.3s, transform 0.2s; /* Transisi untuk hover */
-}
 
-/* Efek hover pada tombol */
-a:hover {
-    transform: scale(1.05); /* Efek zoom saat hover */
-}
 
 /* Tabel styling */
 table {
@@ -191,6 +104,8 @@ tr:hover {
     </style>
 
 @section('content')
+<div class="cs-height_95 cs-height_lg_70"></div>
+
 <div class="container mx-auto py-6">
     <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Daftar Tiket</h1>
 
@@ -242,4 +157,6 @@ tr:hover {
         @endif
     </div>
 </div>
+<div class="cs-height_95 cs-height_lg_70"></div>
+
 @endsection

@@ -20,10 +20,11 @@ class Order extends Model
         return $this->belongsTo(Product::class, 'product_id'); // Mengarah ke produk
     }
 
-public function customRequest()
-{
-    return $this->belongsTo(CustomRequest::class);
-}
+    public function customRequest()
+    {
+        return $this->belongsTo(CustomRequest::class, 'custom_request_id');
+    }
+
     /**
      * Relasi ke user (pelanggan).
      */
@@ -83,6 +84,10 @@ public function customRequest()
     public function scopeWithRelations($query)
     {
         return $query->with(['product.category', 'worker.user', 'worker.categoryWorkers']);
+    }
+    public function scopeWithCustomRequest($query)
+    {
+        return $query->with('customRequest');
     }
 
 }

@@ -21,6 +21,12 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup = 'Transaksi';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?array $with = ['customRequest'];
+
+    public static function getEloquentQuery(): Builder
+{
+    return parent::getEloquentQuery()->with('customRequest');
+}
 
     public static function form(Form $form): Form
     {
@@ -29,6 +35,7 @@ class OrderResource extends Resource
             // User Select: Admin can choose a user for the order (optional)
             Select::make('user_id')
                 ->label('User')
+                ->disabled()
                 ->relationship('user', 'name') // Assumes `Order` has a `user()` relationship defined
                 ->required(),
 
@@ -36,6 +43,7 @@ class OrderResource extends Resource
             TextInput::make('total_price')
                 ->label('Total Price')
                 ->numeric()
+                ->disabled()
                 ->required(),
 
             // Order Status: Admin can choose the order status (pending, completed, etc.)
@@ -47,7 +55,51 @@ class OrderResource extends Resource
                     'completed' => 'Completed',
                     'canceled' => 'Canceled',
                 ])
+                ->disabled()
                 ->required(),
+
+                Forms\Components\Fieldset::make('Custom Request Details')
+                ->schema([
+                        Forms\Components\Placeholder::make('customRequestDetails')
+                        ->label('Nama Custom')
+                        ->content(fn ($record) => $record->customRequest->name ?? 'No Data Available'),
+                        Forms\Components\Placeholder::make('customRequestDetails')
+                        ->label('Nama Brand')
+                        ->content(fn ($record) => $record->customRequest->brand_name ?? 'No Data Available'),
+                        Forms\Components\Placeholder::make('customRequestDetails')
+                        ->label('Nomor Whatsapp')
+                        ->content(fn ($record) => $record->customRequest->whatsapp ?? 'No Data Available'),
+                        Forms\Components\Placeholder::make('customRequestDetails')
+                        ->label('Deskripsi')
+                        ->content(fn ($record) => $record->customRequest->description ?? 'No Data Available'),
+
+                        Forms\Components\Placeholder::make('customRequestDetails')
+                        ->label('Arahan')
+                        ->content(fn ($record) => $record->customRequest->direction ?? 'No Data Available'),
+                        Forms\Components\Placeholder::make('customRequestDetails')
+                        ->label('Warna Rekomendasi')
+                        ->content(fn ($record) => $record->customRequest->color_recommendation ?? 'No Data Available'),
+
+                        Forms\Components\Actions::make([
+                            Forms\Components\Actions\Action::make('Download Referensi Desain')
+                                ->url(function ($record) {
+                                    if ($record->customRequest && $record->customRequest->design_reference) {
+                                        return asset('storage/' . $record->customRequest->design_reference);
+                                    }
+                                    return null;
+                                })
+                                ->label('Unduh Referensi Desain')
+                                ->color('primary') // Warna tombol
+                                ->visible(function ($record) {
+                                    return $record->customRequest && $record->customRequest->design_reference;
+                                }),
+                        ])
+
+                ])
+
+
+                ->visible(fn ($record) => $record && $record->customRequest), // Hanya tampil jika ada customRequest.
+
         ]);
     }
 
@@ -56,6 +108,10 @@ class OrderResource extends Resource
         return $table
 
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                ->label('Order ID')
+                ->sortable()
+                ->searchable(),
                 Tables\Columns\TextColumn::make('user.name')
                     ->sortable()
                     ->searchable(),
@@ -73,9 +129,12 @@ class OrderResource extends Resource
 
                         return 'Tidak Diketahui';
                     }),
-                Tables\Columns\TextColumn::make('total_price')
-                    ->sortable()
-                    ->searchable(),
+                    Tables\Columns\TextColumn::make('worker.name')
+                ->label('Worker')
+                ->sortable()
+                ->searchable()
+                ->placeholder('Belum ada pekerja'), // Tampilkan placeholder jika belum diassign
+
                 Tables\Columns\TextColumn::make('order_status')
                     ->formatStateUsing(fn ($record) => \Str::upper($record->order_status))
                     ->sortable()
@@ -88,12 +147,24 @@ class OrderResource extends Resource
                     ->searchable()
             ])
             ->filters([
+                Tables\Filters\Filter::make('my_orders')
+                    ->label('My Orders')
+                    ->query(function (Builder $query) {
+                        if (auth()->user()->hasRole('panel_pekerja')) {
+                            $pekerjaId = auth()->user()->pekerja?->id; // Ambil ID pekerja dari user yang login
+                            if ($pekerjaId) {
+                                $query->where('worker_id', $pekerjaId);
+                            }
+                        }
+
+                    })
+
+
+
                 // Filter berdasarkan user yang sedang login
-            Tables\Filters\Filter::make('user_id')
-            ->label('My Orders')
-            ->query(fn (Builder $query) => $query->where('user_id', auth()->id())) // Use auth()->id() directly
 
             ])
+
             ->actions([
                 Tables\Actions\EditAction::make(),
 
@@ -111,6 +182,8 @@ class OrderResource extends Resource
             //
         ];
     }
+
+
 
     public static function getPages(): array
     {

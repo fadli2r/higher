@@ -16,12 +16,22 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketMessageController;
+use App\Models\Category;
+use App\Models\FAQ;
+use App\Models\Feedback;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    $categories = Category::all(); // Ambil semua kategori
+    $testimonials = Feedback::with('user', 'product')
+        ->orderBy('created_at', 'desc')
+        ->take(5) // Limit to the latest 10 testimonials
+        ->get();
+        $faqs = FAQ::all(); // Ambil semua FAQ
+
+        return view('welcome', compact('categories', 'testimonials', 'faqs'));
+    })->name('welcome');
 
 Route::get('/products', [ProductController::class, 'index'])->middleware(['auth'])->name('products.index');
 Route::get('/products/category/{category}', [ProductController::class, 'category'])->middleware(['auth'])->name('products.category');
@@ -104,6 +114,6 @@ Route::get('/test-mail', function () {
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
- 
+
     return redirect('/admin');
 })->middleware(['auth', 'signed'])->name('verification.verify');
