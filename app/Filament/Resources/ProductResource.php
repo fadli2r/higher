@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use App\Filament\Resources\ProductResource\RelationManagers\WorkflowRelationManager; // Pastikan ini mengimpor RelationManager yang benar
+use App\Jobs\CalculateEstimatedDaysJob;
 use Filament\Forms\Components\RichEditor;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -75,7 +76,9 @@ class ProductResource extends Resource
                 Forms\Components\Repeater::make('workflows')
                   // You can use Repeater for multiple workflow steps
 
-                  ->relationship('workflows')  // Makes sure the relation is there
+                  ->relationship('workflows', function ($query) {
+                    return $query->select('id', 'step_name', 'step_order', 'step_duration'); // Muat hanya kolom yang diperlukan
+                    })
                     ->schema([
                         Forms\Components\TextInput::make('step_name')
 
@@ -93,9 +96,13 @@ class ProductResource extends Resource
                             ->label('Duration (Days)')
                             ->columnSpan(1),
                     ])
+
                     ->columnSpan(3)
                     ->label('Product Workflows')
+
+
             ]);
+
 
 
 

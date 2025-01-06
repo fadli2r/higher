@@ -10,21 +10,37 @@ use Illuminate\Foundation\Queue\Queueable;
 class CalculateEstimatedDaysJob implements ShouldQueue
 {
     use Queueable;
-    protected $product;
 
-    // Menyimpan produk yang diterima dari constructor
-    public function __construct(Product $product)
+    protected $productId;
+
+    public function __construct($productId)
     {
-        $this->product = $product;
+        $this->productId = $productId;
     }
 
     public function handle()
     {
         ini_set('memory_limit', '256M');
-        // Menghitung total durasi dari workflows
-        $totalDuration = $this->product->workflows()->sum('step_duration');
 
-        // Memperbarui kolom estimated_days di produk
-        $this->product->update(['estimated_days' => $totalDuration]);
+        // Memuat ulang model dengan relasi
+        $product = Product::with('workflows')->find($this->productId);
+
+        if (!$product) {
+            logger("Product with ID {$this->productId} not found.");
+            return;
+        }
+
+        try {
+            // Menghitung total durasi dari workflows
+            $totalDuration = $product->workflows->sum('step_duration');
+
+            // Memperbarui kolom estimated_days di produk
+            $product->update(['estimated_days' => $totalDuration]);
+
+            logger("Updated estimated_days for product ID: {$this->productId}");
+        } catch (\Exception $e) {
+            logger("Failed to calculate estimated days for product ID: {$this->productId}. Error: {$e->getMessage()}");
+        }
     }
 }
+

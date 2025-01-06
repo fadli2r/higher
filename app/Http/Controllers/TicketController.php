@@ -17,7 +17,8 @@ class TicketController extends Controller
                 return view('tickets.index', compact('tickets'));
             }
 
-            return view('tickets.auth');
+            return view('tickets.index', compact('tickets'));
+
         }
 
         // Jika pengguna belum login, tampilkan informasi

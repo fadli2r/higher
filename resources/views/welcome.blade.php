@@ -226,7 +226,7 @@
         <div class="col-xl-6 wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.4s">
           <div class="cs-left_full_width cs-space110">
             <div class="cs-left_sided_img">
-              <img src="assets/img/faq_img.png" alt="About">
+              <img src="assets/img/faq.jpg" style="max-width: 500px" alt="About">
             </div>
           </div>
           <div class="cs-height_0 cs-height_lg_40"></div>

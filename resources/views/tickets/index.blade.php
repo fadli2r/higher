@@ -1,75 +1,5 @@
 @extends('layout.layout')
 <style>
-
-/* Container styling */
-.container {
-    max-width: 800px; /* Maksimal lebar kontainer */
-    margin: 0 auto; /* Pusatkan kontainer */
-    padding: 20px; /* Padding di dalam kontainer */
-}
-
-/* Heading styling */
-h1 {
-    font-size: 2.5rem; /* Ukuran font judul */
-    color: #2c3e50; /* Warna judul */
-    margin-bottom: 20px; /* Jarak bawah judul */
-}
-
-
-
-/* Tabel styling */
-table {
-    width: 100%; /* Lebar penuh */
-    border-collapse: collapse; /* Menghilangkan jarak antara border */
-    margin-top: 20px; /* Jarak atas tabel */
-}
-
-/* Header tabel styling */
-th {
-    background-color: #f1f5f9; /* Warna latar belakang header */
-    color: #4a4a4a; /* Warna teks header */
-    padding: 12px; /* Padding di dalam header */
-    text-align: left; /* Rata kiri untuk teks */
-    font-weight: bold; /* Tebal untuk header */
-}
-
-/* Cell styling */
-td {
-    border: 1px solid #d1d5db; /* Border abu-abu */
-    padding: 12px; /* Padding di dalam cell */
-}
-
-/* Status badge styling */
-span {
-    display: inline-block; /* Agar badge bisa diatur padding */
-    padding: 4px 8px; /* Padding di dalam badge */
-    border-radius: 12px; /* Sudut melengkung untuk badge */
-    color: white; /* Warna teks badge */
-}
-
-/* Hover effect for table rows */
-tr:hover {
-    background-color: #f9fafb; /* Warna latar belakang saat hover */
-    transition: background-color 0.2s; /* Transisi untuk hover */
-}
-
-/* Center text for specific cells */
-.text-center {
-    text-align: center; /* Rata tengah untuk teks */
-}
-/* Responsif */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .menu ul {
-        flex-direction: column;
-        gap: 10px;
-    }
-}
-
 .status-badge {
     display: inline-block; /* Membuat badge menjadi inline-block */
     padding: 6px 12px; /* Padding dalam badge */
@@ -110,9 +40,9 @@ tr:hover {
     <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Daftar Tiket</h1>
 
     <div class="text-center mb-6">
-        <a href="{{ route('tickets.create') }}" class="inline-block px-6 py-3 bg-blue-600 text-black rounded-lg shadow hover:bg-blue-700 transition duration-200">
+        <button onclick="window.location='{{ route('tickets.create') }}'" class="inline-block px-6 py-3 bg-blue-600 text-black rounded-lg shadow hover:bg-blue-700 transition duration-200">
             Buat Tiket Baru
-        </a>
+        </button>
     </div>
 
     <div class="mt-6">

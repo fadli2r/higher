@@ -49,6 +49,14 @@ class WorkerTask extends Model
     {
         return $this->belongsTo(ProductWorkflow::class, 'product_workflow_id');
     }
+    public function tasks()
+    {
+        return $this->hasMany(WorkerTask::class);
+    }
+    public function getTasksInProgressCountAttribute()
+    {
+        return $this->tasks()->where('progress', 'progress')->count();
+    }
 
     public function files()
     {

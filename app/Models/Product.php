@@ -25,23 +25,7 @@ class Product extends Model
     {
         return $this->hasMany(ProductWorkflow::class);
     }
-    public function calculateEstimatedDays()
-    {
-        // Mengambil semua workflow yang terkait dengan produk ini
-        $totalDuration = $this->workflows->sum('step_duration'); // Menjumlahkan step_duration
 
-        // Menyimpan total durasi ke field estimated_days
-        $this->update(['estimated_days' => $totalDuration]);
-    }
-
-    // Hook after saving the product
-    protected static function booted()
-    {
-        static::saved(function ($product) {
-            // Hitung ulang estimated_days setelah produk disimpan
-            $product->calculateEstimatedDays();
-        });
-    }
 
     public function feedbacks()
     {

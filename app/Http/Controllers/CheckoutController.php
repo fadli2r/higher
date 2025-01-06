@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Cart, Coupon, Invoice, Order, Subscriptions, Transaction};
+use App\Models\{Cart, Coupon, CouponUsage, Invoice, Order, Subscriptions, Transaction};
 use Xendit\Xendit;
 
 class CheckoutController extends Controller
@@ -45,6 +45,9 @@ class CheckoutController extends Controller
         $discount = $coupon->discount_value;
     } elseif ($coupon->discount_type === 'percentage') {
         $discount = ($coupon->discount_value / 100) * $cartTotal;
+    }
+    if ($coupon->max_discount_value && $discount > $coupon->max_discount_value) {
+        $discount = $coupon->max_discount_value;
     }
 
     // Simpan kupon dan diskon ke sesi
@@ -150,7 +153,19 @@ class CheckoutController extends Controller
             'currency' => 'IDR',
             'notes' => 'Terima kasih telah melakukan pembelian.',
         ]);
-
+        $couponCode = session('coupon_code');
+        if ($couponCode) {
+            $coupon = Coupon::where('code', $couponCode)->first();
+            if ($coupon) {
+                CouponUsage::create([
+                    'coupon_id' => $coupon->id,
+                    'user_id' => auth()->id(),
+                    'transaction_id' => $transaction->id,
+                ]);
+            }
+            session()->forget('coupon_code');
+            session()->forget('discount');
+        }
         Cart::where('user_id', auth()->id())->delete();
 
         flash()->success('Berhasil membuat order, silahkan lanjutkan pembayaran.');
