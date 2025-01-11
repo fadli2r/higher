@@ -126,7 +126,7 @@ class UserResource extends Resource
 
                 Tables\Filters\SelectFilter::make('anggota')
             ->label('Hanya Anggota')
-            ->query(fn ($query) => $query->whereHas('roles', fn ($roleQuery) => $roleQuery->where('name', 'panel_user'))),
+            // ->query(fn ($query) => $query->whereHas('roles', fn ($roleQuery) => $roleQuery->where('name', 'panel_user'))),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

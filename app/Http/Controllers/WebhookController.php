@@ -22,11 +22,11 @@ class WebhookController extends Controller
 
         // return response()->json($temp_transaction);
 
-        foreach ($temp_transaction->orders as $order) {
-            $order->created_at = Carbon::create($order->created_at)->isoFormat('LLL');
-            // return new WorkerNewOrder($order);
-            Mail::to($order->worker->user->email)->send(new WorkerNewOrder($order));
-        }
+        // foreach ($temp_transaction->orders as $order) {
+        //     $order->created_at = Carbon::create($order->created_at)->isoFormat('LLL');
+        //     // return new WorkerNewOrder($order);
+        //     Mail::to($order->worker->user->email)->send(new WorkerNewOrder($order));
+        // }
 
         if (!$transaction) {
             return response()->json(['status' => 'failed', 'message' => 'Transaction not found'], 404);
@@ -38,11 +38,11 @@ class WebhookController extends Controller
                 'payment_status' => 'paid',
             ]);
 
-            // Perbarui semua order yang terkait dengan transaksi ini
-            $transaction->orders()->update([
-                'order_status' => 'in_progress',
-                'updated_at' => now(),
-            ]);
+            // // Perbarui semua order yang terkait dengan transaksi ini
+            // $transaction->orders()->update([
+            //     'order_status' => 'in_progress',
+            //     'updated_at' => now(),
+            // ]);
 
         } elseif ($data['status'] === 'FAILED') {
             $transaction->update([

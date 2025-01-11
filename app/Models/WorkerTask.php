@@ -11,6 +11,7 @@ class WorkerTask extends Model
         'task_count', 'product_workflow_id','custom_request_id','file_path', 'created_at', 'updated_at'
     ];
     protected $dates = [ 'deadline' => 'datetime'];
+
     protected static function booted()
     {
         static::updated(function (WorkerTask $workerTask) {
@@ -30,6 +31,8 @@ class WorkerTask extends Model
                     }
                 }
             }
+
+            dd($workerTask->toArray());
         });
     }
     public function order()

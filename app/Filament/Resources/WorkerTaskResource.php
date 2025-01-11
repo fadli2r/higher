@@ -71,8 +71,8 @@ class WorkerTaskResource extends Resource
                 ->options(function () {
                     return \App\Models\Pekerja::pluck('name', 'id')->toArray();
                 })
-                ->query(fn ($query) => $query->where('worker_id', auth()->user()->pekerja->id) )
-                ->default(auth()->user()->pekerja->id)
+                ->query(fn ($query) => $query->where('worker_id', auth()->user()->pekerja->id ?? null) )
+                ->default(auth()->user()->pekerja->id ?? null)
 
         ]);
     }
