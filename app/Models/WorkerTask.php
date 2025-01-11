@@ -15,24 +15,8 @@ class WorkerTask extends Model
     protected static function booted()
     {
         static::updated(function (WorkerTask $workerTask) {
-            if ($workerTask->progress === 'completed') {
-                // Dapatkan semua task dari order yang sama
-                $orderTasks = self::where('order_id', $workerTask->order_id)->get();
+            
 
-                // Periksa apakah semua task selesai
-                $allTasksCompleted = $orderTasks->every(fn ($task) => $task->progress === 'completed');
-
-                if ($allTasksCompleted) {
-                    // Update status order menjadi completed
-                    $order = Order::find($workerTask->order_id);
-                    if ($order && $order->order_status !== 'completed') {
-                        $order->order_status = 'completed';
-                        $order->save();
-                    }
-                }
-            }
-
-            dd($workerTask->toArray());
         });
     }
     public function order()

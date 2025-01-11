@@ -29,30 +29,30 @@ class OrderService
     private function createWorkerTasks(Order $order, $product, $worker): void
     {
          // Ambil workflow yang belum dibuatkan task
-    $existingTasks = WorkerTask::where('order_id', $order->id)
-    ->pluck('product_workflow_id')
-    ->toArray();
+        $existingTasks = WorkerTask::where('order_id', $order->id)
+            ->pluck('product_workflow_id')
+            ->toArray();
 
-$workflows = ProductWorkflow::where('product_id', $product->id)
-    ->whereNotIn('id', $existingTasks)
-    ->orderBy('step_order')
-    ->get();
+        $workflows = ProductWorkflow::where('product_id', $product->id)
+            ->whereNotIn('id', $existingTasks)
+            ->orderBy('step_order')
+            ->get();
 
-// Tentukan deadline untuk setiap tugas berdasarkan step_order
-$lastDeadline = now();
+        // Tentukan deadline untuk setiap tugas berdasarkan step_order
+        $lastDeadline = now();
 
-foreach ($workflows as $workflow) {
-    $lastDeadline = $lastDeadline->addDays($workflow->step_duration);
+        foreach ($workflows as $workflow) {
+            $lastDeadline = $lastDeadline->addDays($workflow->step_duration);
 
-    WorkerTask::create([
-        'worker_id' => $worker->id,
-        'order_id' => $order->id,
-        'task_description' => 'Tugas untuk produk: ' . $product->title . ' - Step: ' . $workflow->step_name,
-        'progress' => 'not_started',
-        'deadline' => $lastDeadline,
-        'task_count' => 1,
-        'product_workflow_id' => $workflow->id,
-    ]);
-}
+            WorkerTask::create([
+                'worker_id' => $worker->id,
+                'order_id' => $order->id,
+                'task_description' => 'Tugas untuk produk: ' . $product->title . ' - Step: ' . $workflow->step_name,
+                'progress' => 'not_started',
+                'deadline' => $lastDeadline,
+                'task_count' => 1,
+                'product_workflow_id' => $workflow->id,
+            ]);
+        }
     }
 }
