@@ -25,12 +25,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        FilamentAsset::register([
-            Css::make('example-external-stylesheet', 'https://example.com/external.css'),
-            Css::make('example-local-stylesheet', asset('css/local.css')),
-        ]);
-
-
+        // FilamentAsset::register([
+        //     Css::make('example-external-stylesheet', 'https://example.com/external.css'),
+        //     Css::make('example-local-stylesheet', asset('css/local.css')),
+        // ]);
     }
 
     /**

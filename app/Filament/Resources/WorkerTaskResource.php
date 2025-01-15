@@ -39,12 +39,12 @@ class WorkerTaskResource extends Resource
                     ])
                     ->required(),
 
-                    FileUpload::make('file_path')
+                 FileUpload::make('file_path')
                     ->label('Upload File')
                     ->directory('uploads/tasks')
+                    ->openable()
                     ->preserveFilenames()
                     ->visibility('public') // Pastikan visibilitasnya benar
-
                     ->nullable(),
             ]);
     }
