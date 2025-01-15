@@ -51,62 +51,79 @@ class OrderObserver
             return;
         }
 
-        $worker = Worker::withCount(['tasksInProgress'])
-            ->orderBy('tasks_in_progress_count')
+        // Ambil pekerja dalam kategori "Desain"
+        $categoryWorkers = CategoryWorker::whereHas('category', function ($query) {
+            $query->where('name', 'like', '%Desain%');
+        })->with('worker')
+        ->get();
+
+        // Filter pekerja unik dan pastikan tidak null
+        $workers = $categoryWorkers->map(fn($cw) => $cw->worker)
+            ->filter() // Hapus null
+            ->unique('id'); // Hindari duplikasi pekerja
+
+        if ($workers->isEmpty()) {
+            logger('No workers found in "Desain" category for Custom Request ID: ' . $customRequest->id);
+            return;
+        }
+
+        // Pilih pekerja dengan tugas in-progress paling sedikit
+        $worker = $workers
+            ->filter(fn($worker) => $worker->tasksInProgress()->count() < 5) // Filter pekerja dengan tugas < 5
             ->first();
 
         $bufferDays = 0;
 
-        if (!$worker || $worker->tasks_in_progress_count >= 5) {
-            // Jika pekerja penuh, tambahkan buffer 5 hari
-            $bufferDays = 5;
+        // Jika semua pekerja penuh atau tidak ada yang memenuhi kriteria
+        if (!$worker || $worker->tasksInProgress()->count() >= 12) {
+            $bufferDays = 5; // Tambahkan buffer waktu 5 hari
+            $worker = $workers->random(); // Pilih secara acak dari pekerja yang tersedia
+
+            if (!$worker) {
+                logger('No available workers even after random selection.');
+                return;
+            }
         }
 
-        if (!$worker) {
-            // Jika tidak ada pekerja tersedia, buat buffer task
-            $bufferDeadline = now()->addDays($bufferDays);
-            WorkerTask::create([
-                'worker_id' => null,
-                'order_id' => $order->id,
-                'custom_request_id' => $customRequest->id,
-                'task_description' => 'Tugas ditunda hingga pekerja tersedia.',
-                'workflow_step_id' => null,
-                'progress' => 'pending',
-                'deadline' => $bufferDeadline,
-            ]);
-            return;
-        }
-
+        // Tetapkan worker pada order jika belum ada
         if (!$order->worker_id) {
             $order->worker_id = $worker->id;
             $order->save();
         }
 
-        // Workflow task
+        // Workflow statis
         $workflows = [
             ['id' => 1, 'step_name' => 'Proses Ide', 'step_duration' => 2],
             ['id' => 2, 'step_name' => 'Proses Desain', 'step_duration' => 5],
             ['id' => 3, 'step_name' => 'Hasil Akhir', 'step_duration' => 1],
         ];
 
+        // Cek langkah workflow yang belum dibuat
         $existingWorkflowSteps = WorkerTask::where('order_id', $order->id)
+            ->where('custom_request_id', $customRequest->id)
             ->pluck('workflow_step_id')
             ->toArray();
 
         $filteredWorkflows = collect($workflows)->whereNotIn('id', $existingWorkflowSteps);
 
-        // Mulai dari sekarang + buffer
+        if ($filteredWorkflows->isEmpty()) {
+            logger('No new workflows to create for Order ID: ' . $order->id);
+            return;
+        }
+
+        // Cari deadline terakhir atau fallback ke waktu sekarang
         $lastDeadline = WorkerTask::where('worker_id', $worker->id)
             ->orderBy('deadline', 'desc')
-            ->value('deadline') ?? now();
+            ->value('deadline');
 
-        $lastDeadline = $lastDeadline->addDays($bufferDays);
+        $lastDeadline = $lastDeadline ? \Carbon\Carbon::parse($lastDeadline) : now();
+        $lastDeadline = $lastDeadline->addDays($bufferDays); // Tambahkan buffer waktu jika diperlukan
 
         foreach ($filteredWorkflows as $workflow) {
-            // Tambahkan durasi pengerjaan task ke deadline terakhir
-            $taskDeadline = $lastDeadline->addDays($workflow['step_duration']);
+            // Hitung deadline untuk langkah workflow ini
+            $taskDeadline = $lastDeadline->copy()->addDays($workflow['step_duration']);
 
-            WorkerTask::create([
+            $workerTask = WorkerTask::create([
                 'worker_id' => $worker->id,
                 'order_id' => $order->id,
                 'custom_request_id' => $customRequest->id,
@@ -115,6 +132,12 @@ class OrderObserver
                 'progress' => 'not_started',
                 'deadline' => $taskDeadline,
             ]);
+
+            if ($workerTask) {
+                logger('Worker Task created successfully: Task ID ' . $workerTask->id);
+            } else {
+                logger('Failed to create Worker Task for Workflow Step ID: ' . $workflow['id']);
+            }
 
             // Perbarui lastDeadline untuk task berikutnya
             $lastDeadline = $taskDeadline;
