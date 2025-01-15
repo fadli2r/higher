@@ -69,7 +69,7 @@ class OrderObserver
 
         // Pilih pekerja dengan tugas in-progress paling sedikit
         $worker = $workers
-            ->filter(fn($worker) => $worker->tasksInProgress()->count() < 5) // Filter pekerja dengan tugas < 5
+            ->filter(fn($worker) => $worker->tasksInProgress()->count() < 12) // Filter pekerja dengan tugas < 5
             ->first();
 
         $bufferDays = 0;
@@ -179,10 +179,10 @@ class OrderObserver
 
         // $worker = $workers
         //     ->sortBy(fn($worker) => $worker->tasksInProgress()->count())
-        //     ->firstWhere(fn($worker) => $worker->tasksInProgress()->count() < 5);
+        //     ->firstWhere(fn($worker) => $worker->tasksInProgress()->count() < 12);
 
         $worker = $workers
-            ->filter(fn($worker) => $worker->tasksInProgress()->count() < 5) // Filter pekerja dengan tugas < 5
+            ->filter(fn($worker) => $worker->tasksInProgress()->count() < 12) // Filter pekerja dengan tugas < 5
             ->first(); // Ambil pekerja pertama
 
         $bufferDays = 0;
