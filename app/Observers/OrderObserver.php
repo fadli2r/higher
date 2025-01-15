@@ -51,76 +51,60 @@ class OrderObserver
             return;
         }
 
-        // Ambil semua pekerja dalam kategori "Desain"
-        $categoryWorkers = CategoryWorker::whereHas('category', function ($query) {
-            $query->where('name', 'like', '%Desain%');
-        })->with('worker.user')->get();
+        $worker = Worker::withCount(['tasksInProgress'])
+            ->orderBy('tasks_in_progress_count')
+            ->first();
 
-        // Cari pekerja yang memiliki kurang dari 5 tugas "progress"
-        $worker = $categoryWorkers
-            ->sortBy(fn($cw) => $cw->worker->tasks_in_progress_count) // Urutkan berdasar jumlah tugas
-            ->firstWhere(fn($cw) => $cw->worker->tasks_in_progress_count < 12)?->worker;
+        $bufferDays = 0;
 
-        // Jika tidak ada pekerja yang tersedia
+        if (!$worker || $worker->tasks_in_progress_count >= 12) {
+            // Jika pekerja penuh, tambahkan buffer 5 hari
+            $bufferDays = 5;
+        }
+
         if (!$worker) {
-            // Berikan buffer waktu (misal, tambah 7 hari dari sekarang)
-            $bufferDeadline = now()->addDays(7);
-            logger('All workers in category are full. Assigning buffer deadline: ' . $bufferDeadline);
-
+            // Jika tidak ada pekerja tersedia, buat buffer task
+            $bufferDeadline = now()->addDays($bufferDays);
             WorkerTask::create([
-                'worker_id' => null, // Tidak ada pekerja saat ini
+                'worker_id' => null,
                 'order_id' => $order->id,
                 'custom_request_id' => $customRequest->id,
                 'task_description' => 'Tugas ditunda hingga pekerja tersedia.',
                 'workflow_step_id' => null,
-                'progress' => 'pending', // Status "pending"
+                'progress' => 'pending',
                 'deadline' => $bufferDeadline,
-                'task_count' => 0,
             ]);
-
             return;
         }
 
-        // Tetapkan worker pada order jika belum ada
         if (!$order->worker_id) {
             $order->worker_id = $worker->id;
             $order->save();
         }
 
-        // Workflow Statis
+        // Workflow task
         $workflows = [
             ['id' => 1, 'step_name' => 'Proses Ide', 'step_duration' => 2],
             ['id' => 2, 'step_name' => 'Proses Desain', 'step_duration' => 5],
             ['id' => 3, 'step_name' => 'Hasil Akhir', 'step_duration' => 1],
         ];
 
-        // Cek langkah workflow yang belum dibuat
         $existingWorkflowSteps = WorkerTask::where('order_id', $order->id)
-            ->where('custom_request_id', $customRequest->id)
             ->pluck('workflow_step_id')
             ->toArray();
 
-        $filteredWorkflows = collect($workflows)
-            ->whereNotIn('id', $existingWorkflowSteps);
+        $filteredWorkflows = collect($workflows)->whereNotIn('id', $existingWorkflowSteps);
 
-        if ($filteredWorkflows->isEmpty()) {
-            logger('No new workflows to create for Order ID: ' . $order->id);
-            return;
-        }
-
-        // Cari deadline task terakhir untuk worker ini
+        // Mulai dari sekarang + buffer
         $lastDeadline = WorkerTask::where('worker_id', $worker->id)
-            ->where('order_id', $order->id)
-            ->where('custom_request_id', $customRequest->id)
             ->orderBy('deadline', 'desc')
-            ->value('deadline') ?? now()->addDays(3); // 3 hari dari sekarang jika belum ada task sebelumnya
+            ->value('deadline') ?? now();
+
+        $lastDeadline = $lastDeadline->addDays($bufferDays);
 
         foreach ($filteredWorkflows as $workflow) {
-            logger('Creating task for Workflow Step: ' . $workflow['step_name']);
-
-            // Mulai dari deadline task sebelumnya
-            $taskStartDate = $lastDeadline; // Tanggal mulai adalah akhir dari task sebelumnya
-            $taskDeadline = $taskStartDate->addDays($workflow['step_duration']); // Tambah durasi langkah
+            // Tambahkan durasi pengerjaan task ke deadline terakhir
+            $taskDeadline = $lastDeadline->addDays($workflow['step_duration']);
 
             WorkerTask::create([
                 'worker_id' => $worker->id,
@@ -130,7 +114,6 @@ class OrderObserver
                 'workflow_step_id' => $workflow['id'],
                 'progress' => 'not_started',
                 'deadline' => $taskDeadline,
-                'task_count' => 1,
             ]);
 
             // Perbarui lastDeadline untuk task berikutnya
@@ -160,15 +143,21 @@ class OrderObserver
             ->with('worker.user')
             ->get();
 
-        // Cari pekerja yang memiliki kurang dari 5 tugas "progress"
+        $bufferDays = 0;
+
+        // Cari pekerja yang memiliki kurang dari 12 tugas in-progress
         $worker = $categoryWorkers
             ->sortBy(fn($cw) => $cw->worker->tasks_in_progress_count) // Urutkan berdasar jumlah tugas
             ->firstWhere(fn($cw) => $cw->worker->tasks_in_progress_count < 12)?->worker;
 
+        if (!$worker) {
+            // Jika pekerja penuh, tambahkan buffer 5 hari
+            $bufferDays = 5;
+        }
+
         // Jika tidak ada pekerja yang tersedia
         if (!$worker) {
-            // Berikan buffer waktu (misal, tambah 7 hari dari sekarang)
-            $bufferDeadline = now()->addDays(7);
+            $bufferDeadline = now()->addDays($bufferDays);
             logger('All workers in category are full. Assigning buffer deadline: ' . $bufferDeadline);
 
             WorkerTask::create([
@@ -211,7 +200,9 @@ class OrderObserver
         $lastDeadline = WorkerTask::where('worker_id', $worker->id)
             ->where('order_id', $order->id)
             ->orderBy('deadline', 'desc')
-            ->value('deadline') ?? now()->addDays(3); // 3 hari dari sekarang jika belum ada task sebelumnya
+            ->value('deadline') ?? now();
+
+        $lastDeadline = $lastDeadline->addDays($bufferDays); // Menambahkan buffer waktu jika pekerja penuh
 
         foreach ($filteredWorkflows as $workflow) {
             logger('Creating task for Workflow Step: ' . $workflow->step_name);
