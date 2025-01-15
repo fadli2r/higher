@@ -154,9 +154,14 @@ class OrderObserver
             return;
         }
 
+        // $worker = $workers
+        //     ->sortBy(fn($worker) => $worker->tasksInProgress()->count())
+        //     ->firstWhere(fn($worker) => $worker->tasksInProgress()->count() < 5);
+
         $worker = $workers
-            ->sortBy(fn($worker) => $worker->tasksInProgress()->count())
-            ->firstWhere(fn($worker) => $worker->tasksInProgress()->count() < 5);
+            ->filter(fn($worker) => $worker->tasksInProgress()->count() < 5) // Filter pekerja dengan tugas < 5
+            ->sortBy(fn($worker) => $worker->tasksInProgress()->count()) // Urutkan berdasarkan jumlah tugas
+            ->first(); // Ambil pekerja pertama
 
         $bufferDays = 0;
 
