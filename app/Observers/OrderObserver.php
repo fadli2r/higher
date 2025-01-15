@@ -57,7 +57,7 @@ class OrderObserver
 
         $bufferDays = 0;
 
-        if (!$worker || $worker->tasks_in_progress_count >= 12) {
+        if (!$worker || $worker->tasks_in_progress_count >= 5) {
             // Jika pekerja penuh, tambahkan buffer 5 hari
             $bufferDays = 5;
         }
@@ -144,7 +144,7 @@ class OrderObserver
             ->with('worker')
             ->get();
 
-        // Filter pekerja yang memiliki tugas < 12 atau ambil pekerja secara acak
+        // Filter pekerja yang memiliki tugas < 5 atau ambil pekerja secara acak
         $workers = $categoryWorkers->map(fn($cw) => $cw->worker)
             ->filter() // Pastikan worker tidak null
             ->unique('id'); // Hindari duplikasi
@@ -156,7 +156,7 @@ class OrderObserver
 
         $worker = $workers
             ->sortBy(fn($worker) => $worker->tasksInProgress()->count())
-            ->firstWhere(fn($worker) => $worker->tasksInProgress()->count() < 12);
+            ->firstWhere(fn($worker) => $worker->tasksInProgress()->count() < 5);
 
         $bufferDays = 0;
 
