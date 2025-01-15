@@ -51,26 +51,30 @@ class OrderObserver
             return;
         }
 
-        // Cari pekerja dengan kategori "Desain"
-        $workersInCategory = Worker::whereHas('categories', function ($query) {
-            $query->where('name', 'like', '%Desain%'); // Hanya pekerja dengan kategori "Desain"
-        })->withCount(['tasksInProgress'])
-                ->orderBy('tasks_in_progress_count')
-        ->get();
-
-        $worker = $workersInCategory->first(); // Ambil pekerja dengan tugas paling sedikit
+        $worker = Worker::withCount(['tasksInProgress'])
+            ->orderBy('tasks_in_progress_count')
+            ->first();
 
         $bufferDays = 0;
 
         if (!$worker || $worker->tasks_in_progress_count >= 12) {
-        $bufferDays = 5; // Tambahkan buffer 5 hari
-        $worker = $workersInCategory->random() ?? null; // Pilih secara acak dari kategori "Desain"
+            // Jika pekerja penuh, tambahkan buffer 5 hari
+            $bufferDays = 5;
+        }
 
         if (!$worker) {
-            // Jika tidak ada pekerja dengan kategori "Desain"
-            logger('No workers in "Desain" category available.');
+            // Jika tidak ada pekerja tersedia, buat buffer task
+            $bufferDeadline = now()->addDays($bufferDays);
+            WorkerTask::create([
+                'worker_id' => null,
+                'order_id' => $order->id,
+                'custom_request_id' => $customRequest->id,
+                'task_description' => 'Tugas ditunda hingga pekerja tersedia.',
+                'workflow_step_id' => null,
+                'progress' => 'pending',
+                'deadline' => $bufferDeadline,
+            ]);
             return;
-        }
         }
 
         if (!$order->worker_id) {
@@ -85,19 +89,18 @@ class OrderObserver
             ['id' => 3, 'step_name' => 'Hasil Akhir', 'step_duration' => 1],
         ];
 
-        // Cek langkah workflow yang belum dibuat
         $existingWorkflowSteps = WorkerTask::where('order_id', $order->id)
             ->pluck('workflow_step_id')
             ->toArray();
 
         $filteredWorkflows = collect($workflows)->whereNotIn('id', $existingWorkflowSteps);
 
-        // Mulai dari sekarang atau dari deadline terakhir + buffer
+        // Mulai dari sekarang + buffer
         $lastDeadline = WorkerTask::where('worker_id', $worker->id)
             ->orderBy('deadline', 'desc')
             ->value('deadline') ?? now();
 
-        $lastDeadline = $lastDeadline->addDays($bufferDays); // Tambahkan buffer jika worker penuh
+        $lastDeadline = $lastDeadline->addDays($bufferDays);
 
         foreach ($filteredWorkflows as $workflow) {
             // Tambahkan durasi pengerjaan task ke deadline terakhir
@@ -130,7 +133,6 @@ class OrderObserver
         $order = Order::with(['product.workflows', 'product.category', 'worker.user'])->find($order->id);
 
         if (!$order || !$order->product) {
-        logger('Order or Product not found for Order ID: ' . $order->id);
             return;
         }
 
@@ -141,69 +143,73 @@ class OrderObserver
             ->with('worker.user')
             ->get();
 
-        // Filter pekerja dan hitung tugas in-progress
-        $workers = $categoryWorkers->map(fn($cw) => $cw->worker)
-            ->filter() // Pastikan worker tidak null
-            ->unique('id') // Hindari duplikasi worker
-            ->values();
+        $bufferDays = 0;
 
-        if ($workers->isEmpty()) {
-            logger('No workers found for category ID: ' . $product->category->id);
+        // Cari pekerja yang memiliki kurang dari 12 tugas in-progress
+        $worker = $categoryWorkers
+            ->sortBy(fn($cw) => $cw->worker->tasks_in_progress_count) // Urutkan berdasar jumlah tugas
+            ->firstWhere(fn($cw) => $cw->worker->tasks_in_progress_count < 12)?->worker;
+
+        if (!$worker) {
+            // Jika pekerja penuh, tambahkan buffer 5 hari
+            $bufferDays = 5;
+        }
+
+        // Jika tidak ada pekerja yang tersedia
+        if (!$worker) {
+            $bufferDeadline = now()->addDays($bufferDays);
+            logger('All workers in category are full. Assigning buffer deadline: ' . $bufferDeadline);
+
+            WorkerTask::create([
+                'worker_id' => null, // Tidak ada pekerja saat ini
+                'order_id' => $order->id,
+                'task_description' => 'Tugas ditunda hingga pekerja tersedia.',
+                'product_workflow_id' => null,
+                'progress' => 'pending', // Status "pending"
+                'deadline' => $bufferDeadline,
+                'task_count' => 0,
+            ]);
+
             return;
         }
 
-        $worker = $workers
-            ->sortBy(fn($worker) => $worker->tasksInProgress->count()) // Urutkan berdasar jumlah tugas in-progress
-            ->first();
+        // Tetapkan worker pada order jika belum ada
+        if (!$order->worker_id) {
+            $order->worker_id = $worker->id;
+            $order->save();
+        }
 
-            $bufferDays = 0;
+        // Ambil workflow produk
+        $workflows = ProductWorkflow::where('product_id', $order->product_id)
+            ->orderBy('step_order')
+            ->get();
 
-        // Jika tidak ada worker atau semua worker penuh
-        if (!$worker || $worker->tasksInProgress->count() >= 12) {
-            $bufferDays = 5; // Tambahkan buffer 5 hari
-            $worker = $workers->random(); // Pilih pekerja secara acak dari kategori
+        // Cek langkah workflow yang belum dibuat
+        $existingTaskIds = WorkerTask::where('order_id', $order->id)
+            ->pluck('product_workflow_id')
+            ->toArray();
 
-            if (!$worker) {
-                logger('No workers available after filtering for category.');
-                return;
-            }
-            }
+        $filteredWorkflows = $workflows->whereNotIn('id', $existingTaskIds);
 
-            // Tetapkan worker pada order jika belum ada
-            if (!$order->worker_id) {
-                $order->worker_id = $worker->id;
-                $order->save();
-            }
+        if ($filteredWorkflows->isEmpty()) {
+            logger('No new workflows to create for Order ID: ' . $order->id);
+            return;
+        }
 
-            // Ambil workflow produk
-            $workflows = ProductWorkflow::where('product_id', $order->product_id)
-                ->orderBy('step_order')
-                ->get();
+        // Cari deadline task terakhir untuk worker ini
+        $lastDeadline = WorkerTask::where('worker_id', $worker->id)
+            ->where('order_id', $order->id)
+            ->orderBy('deadline', 'desc')
+            ->value('deadline') ?? now();
 
-            // Cek langkah workflow yang belum dibuat
-            $existingTaskIds = WorkerTask::where('order_id', $order->id)
-                ->pluck('product_workflow_id')
-                ->toArray();
-
-            $filteredWorkflows = $workflows->whereNotIn('id', $existingTaskIds);
-
-            if ($filteredWorkflows->isEmpty()) {
-                logger('No new workflows to create for Order ID: ' . $order->id);
-                return;
-            }
-
-            // Cari deadline task terakhir untuk worker ini
-            $lastDeadline = WorkerTask::where('worker_id', $worker->id)
-                ->orderBy('deadline', 'desc')
-                ->value('deadline') ?? now();
-
-        $lastDeadline = $lastDeadline->addDays($bufferDays); // Tambahkan buffer jika worker penuh
+        $lastDeadline = $lastDeadline->addDays($bufferDays); // Menambahkan buffer waktu jika pekerja penuh
 
         foreach ($filteredWorkflows as $workflow) {
             logger('Creating task for Workflow Step: ' . $workflow->step_name);
 
             // Mulai dari deadline task sebelumnya
-        $taskDeadline = $lastDeadline->addDays($workflow->step_duration); // Tambah durasi langkah
+            $taskStartDate = $lastDeadline; // Tanggal mulai adalah akhir dari task sebelumnya
+            $taskDeadline = $taskStartDate->addDays($workflow->step_duration); // Tambah durasi langkah
 
             WorkerTask::create([
                 'worker_id' => $worker->id,
