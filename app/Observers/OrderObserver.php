@@ -248,7 +248,8 @@ class OrderObserver
             ]);
 
             // Perbarui lastDeadline untuk task berikutnya
-            $lastDeadline = $taskDeadline;
+            // $lastDeadline = $taskDeadline;
+            $currentDeadline = $taskDeadline;
         }
 
         if ($worker->user && $worker->user->email) {
