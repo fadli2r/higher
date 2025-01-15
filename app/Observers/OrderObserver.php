@@ -229,11 +229,13 @@ class OrderObserver
         $lastDeadline = $lastDeadline ? \Carbon\Carbon::parse($lastDeadline) : now();
         $lastDeadline = $lastDeadline->addDays($bufferDays); // Tambahkan buffer jika worker penuh
 
+        $currentDeadline = $order->created_at->copy()->addDays($bufferDays);
+
         foreach ($filteredWorkflows as $workflow) {
             logger('Creating task for Workflow Step: ' . $workflow->step_name);
 
             // Tentukan deadline untuk langkah ini
-            $taskDeadline = $lastDeadline->copy()->addDays($workflow->step_duration);
+            $taskDeadline = $currentDeadline->copy()->addDays($workflow->step_duration);
 
             WorkerTask::create([
                 'worker_id' => $worker->id,
