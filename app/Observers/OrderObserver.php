@@ -124,7 +124,7 @@ class OrderObserver
         $product['title'] = $customRequest->name;
 
         if ($worker->user && $worker->user->email) {
-            Mail::to($worker->user->email)->send(new WorkerNewOrder($worker, $order, $product));
+            Mail::to($worker->user->email)->send(new WorkerNewOrder($worker, $order, $product, $worker->user));
         }
     }
 
@@ -226,7 +226,7 @@ class OrderObserver
         }
 
         if ($worker->user && $worker->user->email) {
-            Mail::to($worker->user->email)->send(new WorkerNewOrder($worker, $order, $product));
+            Mail::to($worker->user->email)->send(new WorkerNewOrder($worker, $order, $product, $worker->user));
         }
     }
 

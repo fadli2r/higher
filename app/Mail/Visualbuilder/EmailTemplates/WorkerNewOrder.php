@@ -25,12 +25,12 @@ class WorkerNewOrder extends Mailable
      *
      * @return void
      */
-    public function __construct($order, $worker, $product)
+    public function __construct($order, $worker, $product , $user)
     {
         $this->order = $order;
         $this->worker = $worker;
         $this->product = $product;
-        $this->user = $worker->user;
-        $this->sendTo = $this->user->email;
+        $this->user = $user;
+        $this->sendTo = $user->email;
     }
 }

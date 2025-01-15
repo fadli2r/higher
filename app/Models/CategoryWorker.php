@@ -25,6 +25,6 @@ class CategoryWorker extends Model
     // Relasi ke Pekerja
     public function worker()
     {
-        return $this->belongsTo(Pekerja::class, 'worker_id');
+        return $this->belongsTo(Worker::class, 'worker_id');
     }
 }
