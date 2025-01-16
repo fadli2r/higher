@@ -70,7 +70,9 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-                EmailTemplatesPlugin::make(),
+                EmailTemplatesPlugin::make()->enableNavigation(
+                    fn () => (auth()->user()->roles[0]->name == 'super_admin'),
+                ),
                 FilamentShieldPlugin::make(),
                 FilamentEditProfilePlugin::make()
                 ->slug('edit-profile')
