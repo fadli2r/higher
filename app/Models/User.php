@@ -36,6 +36,7 @@ class User extends Authenticatable implements HasAvatar, MustVerifyEmail
     protected $fillable = [
         'name',
         'email',
+        'whatsapp',
         'password',
         'membership_status',
         'avatar_url', // or column name according to config('filament-edit-profile.avatar_column', 'avatar_url')

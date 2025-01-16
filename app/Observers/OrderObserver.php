@@ -75,7 +75,7 @@ class OrderObserver
         $bufferDays = 0;
 
         // Jika semua pekerja penuh atau tidak ada yang memenuhi kriteria
-        if (!$worker || $worker->tasksInProgress()->count() >= 12) {
+        if (!$worker) {
             $bufferDays = 5; // Tambahkan buffer waktu 5 hari
             $worker = $workers->random(); // Pilih secara acak dari pekerja yang tersedia
 
