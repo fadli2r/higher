@@ -11,7 +11,7 @@
             <thead class="table-dark">
                 <tr>
                     <th>Item</th>
-                    <th>Quantity</th>
+                    {{-- <th>Quantity</th> --}}
                     <th>Price</th>
                     <th>Action</th>
                 </tr>
@@ -21,8 +21,8 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center">
-                            <img src="{{ $item->product->image_url ?? 'https://via.placeholder.com/60' }}"
-                                 alt="Item" class="img-thumbnail me-3" style="width: 60px;">
+                            {{-- <img src="{{ $item->product->image_url ?? 'https://via.placeholder.com/60' }}"
+                                 alt="Item" class="img-thumbnail me-3" style="width: 60px;"> --}}
 
                             <span>
                                 {{ $item->product?->title ?? $item->customRequest?->description }}
@@ -30,9 +30,9 @@
                         </div>
                     </td>
 
-                    <td>
+                    {{-- <td>
                         <input type="number" class="form-control" value="{{ $item->quantity }}" min="1" disabled>
-                    </td>
+                    </td> --}}
 
                     <td>
                         @php
