@@ -58,6 +58,17 @@ class OrderResource extends Resource
                 ->disabled()
                 ->required(),
 
+                Forms\Components\Fieldset::make('User Details')
+                ->schema([
+                    Forms\Components\Placeholder::make('userName')
+                        ->label('User Name')
+                        ->content(fn ($record) => $record->user->name ?? 'No User'),
+                    Forms\Components\Placeholder::make('userWhatsApp')
+                        ->label('WhatsApp')
+                        ->content(fn ($record) => $record->user->whatsapp ?? 'No WhatsApp Available'),
+                ])
+                ->visible(fn ($record) => $record && $record->user),
+
                 Forms\Components\Fieldset::make('Custom Request Details')
                 ->schema([
                         Forms\Components\Placeholder::make('customRequestDetails')

@@ -26,9 +26,9 @@ class Worker extends Model
     {
         return $this->belongsTo(JobDesc::class, 'job_descs_id');
     }
+    
     public function tasksInProgress()
     {
-        return $this->hasMany(WorkerTask::class, 'worker_id')
-            ->where('progress', 'in_progress'); // Hanya tugas dengan status 'in_progress'
+        return $this->tasks()->where('progress', 'not_started');
     }
 }
