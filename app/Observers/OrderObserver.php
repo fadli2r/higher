@@ -58,9 +58,9 @@ class OrderObserver
         ->get();
 
         // Filter pekerja unik dan pastikan tidak null
-        // $workers = $categoryWorkers->map(fn($cw) => $cw->worker)
-        //     ->filter() // Hapus null
-        //     ->unique('id'); // Hindari duplikasi pekerja
+        $workers = $categoryWorkers->map(fn($cw) => $cw->worker)
+            ->filter() // Hapus null
+            ->unique('id'); // Hindari duplikasi pekerja
 
         if ($workers->isEmpty()) {
             logger('No workers found in "Desain" category for Custom Request ID: ' . $customRequest->id);
@@ -68,9 +68,12 @@ class OrderObserver
         }
 
         // Pilih pekerja dengan tugas in-progress paling sedikit
+        // $worker = $workers
+        //     ->filter(fn($worker) => $worker->tasksInProgress()->count() < 12) // Filter pekerja dengan tugas < 5
+        //     ->first();
+
         $worker = $workers
-            // ->sortBy(fn($cw) => $cw->worker->tasksInProgress()->count())
-            ->filter(fn($worker) => $worker->tasksInProgress()->count() < 12) // Filter pekerja dengan tugas < 5
+            ->sortBy(fn($worker) => $worker->tasksInProgress()->count())
             ->first();
 
         $bufferDays = 0;
