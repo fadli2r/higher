@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class WorkerTask extends Model
 {
     protected $fillable = [
-        'worker_id', 'order_id', 'task_description', 'progress', 'deadline',
+        'worker_id', 'order_id', 'task_description', 'progress', 'deadline', 'workflow_step_id',
         'task_count', 'product_workflow_id','custom_request_id','file_path', 'created_at', 'updated_at'
     ];
     protected $dates = [ 'deadline' => 'datetime'];
