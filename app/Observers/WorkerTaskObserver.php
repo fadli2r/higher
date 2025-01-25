@@ -6,6 +6,7 @@ use App\Models\WorkerTask;
 
 use App\Mail\Visualbuilder\EmailTemplates\WorkerTaskUpdate;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Order;
 
 class WorkerTaskObserver
 {
@@ -38,7 +39,7 @@ class WorkerTaskObserver
 
         if ($workerTask->progress === 'completed') {
             // Dapatkan semua task dari order yang sama
-            $orderTasks = self::where('order_id', $workerTask->order_id)->get();
+            $orderTasks = WorkerTask::where('order_id', $workerTask->order_id)->get();
 
             // Periksa apakah semua task selesai
             $allTasksCompleted = $orderTasks->every(fn ($task) => $task->progress === 'completed');

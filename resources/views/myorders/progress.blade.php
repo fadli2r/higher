@@ -99,7 +99,6 @@
         </div>
         @endforeach
     </div>
-</div>
 <div class="cs-height_95 cs-height_lg_70"></div>
 
 @endsection

@@ -80,6 +80,7 @@ Route::get('/transactions', [TransactionController::class, 'index'])->name('tran
 Route::get('/transactions/pay/{id}', [TransactionController::class, 'pay'])->name('transactions.pay');
 
 Route::get('/transaction/{transaction}/pay', [CheckoutController::class, 'payTransaction'])->name('transaction.pay');
+Route::get('/transaction/{transaction}/payPelunasan', [CheckoutController::class, 'payTransactionPelunasan'])->name('transaction.payPelunasan');
 
 // Invoice
 Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');

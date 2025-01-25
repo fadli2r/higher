@@ -62,6 +62,7 @@
                     <th>Tanggal</th>
                     <th>Jatuh Tempo</th>
                     <th>Aksi</th>
+                    <th>Lunasi</th>
                 </tr>
             </thead>
             <tbody>
@@ -102,6 +103,15 @@
                                 <span class="text-danger">Transaksi Gagal</span>
                             @else
                                 <span class="text-success">Sudah Dibayar</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($transaction->remaining_payment > 0 && $transaction->payment_status === 'paid')
+                                <a href="{{ $transaction->invoice_url_full_paid ?? route('transaction.payPelunasan', $transaction->id) }}" class="btn btn-primary btn-sm">Lunasi</a>
+                            @elseif($transaction->payment_status === 'pending')
+                                -
+                            @else
+                                Lunas
                             @endif
                         </td>
                     </tr>

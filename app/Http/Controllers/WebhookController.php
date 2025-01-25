@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use App\Mail\Visualbuilder\EmailTemplates\{PembayaranBerhasil, WorkerNewOrder};
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
@@ -14,6 +15,16 @@ class WebhookController extends Controller
     {
         // Validasi payload
         $data = $request->all();
+
+        if (str_contains($data['description'], '[PELUNASAN]')) {
+            $transaction = Transaction::where('invoice_id_full_paid', $data['id'])->first();
+            $transaction->update([
+                'remaining_payment' => 0,
+                'down_payment' => 0
+            ]);
+            
+            return;
+        }
 
         // Temukan transaksi berdasarkan invoice_id dari payload
         $transaction = Transaction::where('invoice_id', $data['id'])->with('orders.product', 'orders.worker.user', 'user')->first();

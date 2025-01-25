@@ -184,11 +184,10 @@ class CheckoutController extends Controller
 
         $transaction = Transaction::findOrFail($transactionId);
 
-
         $params = [
             'external_id' => 'transaction-' . $transaction->id,
             'payer_email' => auth()->user()->email,
-            'description' => 'Pembayaran untuk transaksi #' . $transaction->id,
+            'description' => '[ORDER] Pembayaran untuk transaksi #' . $transaction->id,
             'amount' => ($transaction->down_payment > 0) ? $transaction->down_payment : $transaction->total_price,
         ];
 
@@ -197,6 +196,29 @@ class CheckoutController extends Controller
         $transaction->update([
             'invoice_url' => $invoice['invoice_url'],
             'invoice_id' => $invoice['id'],
+        ]);
+
+        return redirect()->to($invoice['invoice_url']);
+    }
+
+    public function payTransactionPelunasan($transactionId)
+    {
+        Xendit::setApiKey(env('XENDIT_SECRET_KEY'));
+
+        $transaction = Transaction::findOrFail($transactionId);
+
+        $params = [
+            'external_id' => 'transaction-' . $transaction->id,
+            'payer_email' => auth()->user()->email,
+            'description' => '[PELUNASAN] Pembayaran untuk transaksi #' . $transaction->idd,
+            'amount' => $transaction->remaining_payment,
+        ];
+
+        $invoice = \Xendit\Invoice::create($params);
+
+        $transaction->update([
+            'invoice_url_full_paid' => $invoice['invoice_url'],
+            'invoice_id_full_paid' => $invoice['id'],
         ]);
 
         return redirect()->to($invoice['invoice_url']);
