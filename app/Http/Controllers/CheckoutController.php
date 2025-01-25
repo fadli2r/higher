@@ -210,7 +210,7 @@ class CheckoutController extends Controller
         $params = [
             'external_id' => 'transaction-' . $transaction->id,
             'payer_email' => auth()->user()->email,
-            'description' => '[PELUNASAN] Pembayaran untuk transaksi #' . $transaction->idd,
+            'description' => '[PELUNASAN] Untuk transaksi #' . $transaction->idd,
             'amount' => $transaction->remaining_payment,
         ];
 

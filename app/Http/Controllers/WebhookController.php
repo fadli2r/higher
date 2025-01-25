@@ -17,8 +17,7 @@ class WebhookController extends Controller
         $data = $request->all();
 
         if (str_contains($data['description'], '[PELUNASAN]')) {
-            $transaction = Transaction::where('invoice_id_full_paid', $data['id'])->first();
-            $transaction->update([
+            $transaction = Transaction::where('invoice_id_full_paid', $data['id'])->update([
                 'remaining_payment' => 0,
                 'down_payment' => 0
             ]);
