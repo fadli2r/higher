@@ -64,6 +64,10 @@ class CheckoutController extends Controller
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
+        if (request()->type == null) {
+            return redirect()->route('cart.index')->with('error', 'Pilih tipe pembayaran terlebih dahulu.');
+        }
+
         $cart = Cart::where('user_id', auth()->id())->with(['product', 'customRequest'])->get();
 
         if ($cart->isEmpty()) {
@@ -124,6 +128,8 @@ class CheckoutController extends Controller
         $transaction = Transaction::create([
             'user_id' => auth()->id(),
             'total_price' => $totalPriceAfterDiscount,
+            'down_payment' => (request()->type == 'full') ? 0.0 : $totalPriceAfterDiscount / 2,
+            'remaining_payment' => (request()->type == 'full') ? 0.0 : $totalPriceAfterDiscount / 2,
             'payment_status' => 'pending',
 
         ]);
@@ -147,7 +153,7 @@ class CheckoutController extends Controller
             'transaction_id' => $transaction->id,
             'user_id' => auth()->id(),
             'status' => 'pending',
-            'total_amount' => $totalPriceAfterDiscount,
+            'total_amount' => (request()->type == 'full') ? $totalPriceAfterDiscount : $totalPriceAfterDiscount / 2,
             'due_date' => now()->addDays(7),
             'issued_date' => now(),
             'currency' => 'IDR',
@@ -183,7 +189,7 @@ class CheckoutController extends Controller
             'external_id' => 'transaction-' . $transaction->id,
             'payer_email' => auth()->user()->email,
             'description' => 'Pembayaran untuk transaksi #' . $transaction->id,
-            'amount' => $transaction->total_price,
+            'amount' => ($transaction->down_payment > 0) ? $transaction->down_payment : $transaction->total_price,
         ];
 
         $invoice = \Xendit\Invoice::create($params);

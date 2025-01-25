@@ -10,7 +10,7 @@ class Transaction extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'total_price', 'payment_status', 'is_subscription_payment', 'invoice_url', 'invoice_number', 'invoice_id'];
+    protected $fillable = ['user_id', 'total_price', 'payment_status', 'is_subscription_payment', 'invoice_url', 'invoice_number', 'invoice_id', 'down_payment', 'remaining_payment', 'payment_method', 'payment_date', 'payment_due_date', 'payment_status', 'status', 'created_at', 'updated_at'];
 
 
     public function orders()

@@ -97,17 +97,44 @@
 
     <div class="d-flex justify-content-between align-items-center mt-4">
         <a href="{{ route('products.index') }}" class="btn btn-secondary">Continue Shopping</a>
-
-        <h5>
-            Total:
-            <span class="text-success">
-                @rupiah($cart->sum(function ($item) {
-                    return ($item->product?->price ?? $item->customRequest?->price) * $item->quantity;
-                }) - session('discount', 0))
-            </span>
-        </h5>
-
-        <a href="{{ route('cart.createOrder') }}" class="btn btn-primary">Checkout</a>
+    </div>
+    <div class="d-flex justify-content-center align-items-center mt-4">
+        <div class="row">
+            <div class="col-6">
+                <div class="row">
+                    <div class="row">
+                        <h5>
+                            Full Payment Total:
+                            <span class="text-success">
+                                @rupiah($cart->sum(function ($item) {
+                                    return ($item->product?->price ?? $item->customRequest?->price) * $item->quantity;
+                                }) - session('discount', 0))
+                            </span>
+                        </h5>
+                    </div>
+                    <div class="row">
+                        <a href="{{ route('cart.createOrder', ['type' => 'full']) }}" class="btn btn-primary">Checkout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="row">
+                    <div class="row">
+                        <h5>
+                            Down Payment (DP) 50%:
+                            <span class="text-success">
+                                @rupiah($cart->sum(function ($item) {
+                                    return (($item->product?->price ?? $item->customRequest?->price) * $item->quantity) / 2;
+                                }) - session('discount', 0))
+                            </span>
+                        </h5>
+                    </div>
+                    <div class="row">
+                        <a href="{{ route('cart.createOrder', ['type' => 'dp']) }}" class="btn btn-primary">Checkout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <div class="cs-height_95 cs-height_lg_70"></div>

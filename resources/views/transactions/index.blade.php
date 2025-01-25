@@ -56,6 +56,8 @@
                 <tr>
                     <th>Invoice</th>
                     <th>Total Harga</th>
+                    <th>Tipe Pembayaran</th>
+                    <th>Sisa Pembayaran</th>
                     <th>Status Pembayaran</th>
                     <th>Tanggal</th>
                     <th>Jatuh Tempo</th>
@@ -75,6 +77,8 @@
                             @endif
                         </td>
                         <td>Rp {{ number_format($transaction->total_price, 2) }}</td>
+                        <td>{{ ($transaction->down_payment > 0) ? 'Down Payment' : 'Full Payment' }}</td>
+                        <td>{{ ($transaction->remaining_payment > 0) ? 'Rp. '.number_format($transaction->remaining_payment, 0, ',', '.') : '-' }}</td>
                         <td>
                             <span class="badge
                             {{ $transaction->payment_status === 'paid' ? 'bg-success' : '' }}
